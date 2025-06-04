@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional, List, Tuple
 import ta
 
 from .base_strategy import BaseStrategy, Signal
-from ..utils.logger import get_logger
+from utils.logger import get_logger
 
 
 class MTFTrendAnalysisStrategy(BaseStrategy):

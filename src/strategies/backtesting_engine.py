@@ -14,7 +14,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .base_strategy import BaseStrategy, Signal, Position
-from ..utils.logger import get_logger, log_performance
+from utils.logger import get_logger, log_performance
 
 
 @dataclass
