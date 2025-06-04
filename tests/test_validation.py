@@ -47,7 +47,11 @@ def engine() -> BacktestingEngine:
 
 def _sample_parameters(space: dict) -> dict:
     """Sample a concrete parameter set from a hyperopt space."""
-    return {k: stochastic.sample(v) for k, v in space.items()}
+    params = {k: stochastic.sample(v) for k, v in space.items()}
+    if 'fast_period' in params and 'slow_period' in params:
+        if params['fast_period'] >= params['slow_period']:
+            params['fast_period'], params['slow_period'] = 5, 20
+    return params
 
 
 # Test only a subset for quick validation

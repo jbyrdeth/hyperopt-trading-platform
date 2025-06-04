@@ -635,8 +635,8 @@ class BacktestingEngine:
         total_pnl = sum([t.net_pnl for t in self.trades])
         recovery_factor = total_pnl / abs(max_drawdown) if max_drawdown != 0 else 0
         
-        # Monthly returns
-        monthly_returns = equity_curve.resample('ME').last().pct_change().dropna()
+        # Monthly returns (use month end frequency)
+        monthly_returns = equity_curve.resample('M').last().pct_change().dropna()
         
         # Cost breakdown
         total_commission = sum([t.commission for t in self.trades])
