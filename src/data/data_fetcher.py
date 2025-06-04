@@ -748,34 +748,30 @@ class DataFetcher:
         
         # Create tasks for concurrent fetching
         tasks = []
+        task_keys = []
         for symbol in symbols:
             for timeframe in timeframes:
-                task = self.fetch_data(symbol, timeframe, start_date, end_date)
-                tasks.append((symbol, timeframe, task))
-        
+                task = asyncio.create_task(
+                    self.fetch_data(symbol, timeframe, start_date, end_date)
+                )
+                tasks.append(task)
+                task_keys.append((symbol, timeframe))
+
         # Execute tasks concurrently
         results = {}
         completed_tasks = 0
         total_tasks = len(tasks)
-        
-        for symbol, timeframe, task in tasks:
-            try:
-                result = await task
-                
-                if symbol not in results:
-                    results[symbol] = {}
-                results[symbol][timeframe] = result
-                
-                completed_tasks += 1
-                
-                if completed_tasks % 10 == 0 or completed_tasks == total_tasks:
-                    self.logger.info(f"Completed {completed_tasks}/{total_tasks} fetch tasks")
-                
-            except Exception as e:
-                self.logger.error(f"Error fetching {symbol} {timeframe}: {e}")
-                if symbol not in results:
-                    results[symbol] = {}
-                results[symbol][timeframe] = FetchResult(
+
+        try:
+            gathered = await asyncio.gather(*tasks, return_exceptions=True)
+        except Exception as e:
+            self.logger.error(f"Unexpected error during batch fetch: {e}")
+            gathered = []
+
+        for (symbol, timeframe), result in zip(task_keys, gathered):
+            if isinstance(result, Exception):
+                self.logger.error(f"Error fetching {symbol} {timeframe}: {result}")
+                fetch_result = FetchResult(
                     success=False,
                     data=None,
                     source="error",
@@ -785,7 +781,20 @@ class DataFetcher:
                     end_time=end_date,
                     fetch_duration=0,
                     quality_metrics=None,
-                    error_message=str(e)
+                    error_message=str(result)
+                )
+            else:
+                fetch_result = result
+
+            if symbol not in results:
+                results[symbol] = {}
+            results[symbol][timeframe] = fetch_result
+
+            completed_tasks += 1
+
+            if completed_tasks % 10 == 0 or completed_tasks == total_tasks:
+                self.logger.info(
+                    f"Completed {completed_tasks}/{total_tasks} fetch tasks"
                 )
         
         # Log summary
