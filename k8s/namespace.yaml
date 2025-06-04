@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hyperopt-production
+  labels:
+    name: hyperopt-production
+    app: hyperopt-platform
+    environment: production
+    version: v1.0.0
+  annotations:
+    description: "HyperOpt Strategy Platform Production Environment"
+    contact: "devops@hyperopt.company"
+    cost-center: "trading-technology"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hyperopt-staging
+  labels:
+    name: hyperopt-staging
+    app: hyperopt-platform
+    environment: staging
+    version: v1.0.0
+  annotations:
+    description: "HyperOpt Strategy Platform Staging Environment"
+    contact: "devops@hyperopt.company"
+    cost-center: "trading-technology" 

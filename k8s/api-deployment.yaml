@@ -1,0 +1,394 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-api
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: api
+    environment: production
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: api
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: hyperopt-api
+      containers:
+      - name: api
+        image: ghcr.io/hyperopt/hyperopt-platform:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/$(REDIS_DB)"
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_PORT
+        - name: DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_NAME
+        - name: DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: DATABASE_PASSWORD
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_PORT
+        - name: REDIS_DB
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_DB
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: REDIS_PASSWORD
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: SECRET_KEY
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: JWT_SECRET_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: ANTHROPIC_API_KEY
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: OPENAI_API_KEY
+        - name: PERPLEXITY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: PERPLEXITY_API_KEY
+        envFrom:
+        - configMapRef:
+            name: hyperopt-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        volumeMounts:
+        - name: app-logs
+          mountPath: /app/logs
+        - name: temp-storage
+          mountPath: /app/temp
+        - name: data-storage
+          mountPath: /app/data
+      volumes:
+      - name: app-logs
+        emptyDir: {}
+      - name: temp-storage
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: data-storage
+        persistentVolumeClaim:
+          claimName: hyperopt-data-pvc
+      nodeSelector:
+        node-type: compute
+      tolerations:
+      - key: "compute-only"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperopt-api-service
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: api
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+  - port: 9090
+    targetPort: 9090
+    name: metrics
+  selector:
+    app: hyperopt-platform
+    component: api
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hyperopt-api-hpa
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hyperopt-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-api
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: api
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hyperopt-data-pvc
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: storage
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: shared-storage
+
+---
+# Staging API Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-api-staging
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: api
+    environment: staging
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: api
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: api
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/hyperopt/hyperopt-platform:staging
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/$(REDIS_DB)"
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: DATABASE_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: DATABASE_PORT
+        - name: DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: DATABASE_NAME
+        - name: DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: DATABASE_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets-staging
+              key: DATABASE_PASSWORD
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: REDIS_PORT
+        - name: REDIS_DB
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: REDIS_DB
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets-staging
+              key: REDIS_PASSWORD
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets-staging
+              key: SECRET_KEY
+        envFrom:
+        - configMapRef:
+            name: hyperopt-config-staging
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperopt-api-service
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: api
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+  selector:
+    app: hyperopt-platform
+    component: api
+  type: ClusterIP 

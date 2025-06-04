@@ -1,0 +1,619 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: hyperopt-restricted-psp
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  allowedCapabilities: []
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  runAsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 65535
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 65535
+  readOnlyRootFilesystem: true
+  allowedHostPaths: []
+  forbiddenSysctls:
+    - '*'
+
+---
+# Pod Security Standards (PSS) for Kubernetes 1.23+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hyperopt-production
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    security.hyperopt.company/tier: production
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hyperopt-staging
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    security.hyperopt.company/tier: staging
+
+---
+# Network Policy for API Layer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-api-network-policy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: worker
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: scheduler
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: monitoring
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 9090  # Metrics port
+  egress:
+  # Allow database access
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Allow Redis access
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  # Allow external API calls (HTTPS only)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: UDP
+      port: 53  # DNS
+  # Block all other egress
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 80
+    namespaceSelector:
+      matchLabels:
+        name: kube-system  # Allow kube-dns only
+
+---
+# Network Policy for Worker Layer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-worker-network-policy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: worker
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: api
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: scheduler
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: monitoring
+    ports:
+    - protocol: TCP
+      port: 9091  # Metrics port
+  egress:
+  # Database access
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Redis access
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  # External API calls for AI services (HTTPS only)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: UDP
+      port: 53  # DNS
+
+---
+# Network Policy for Database Layer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-postgres-network-policy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: postgres
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: api
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: worker
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: scheduler
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: postgres-exporter
+    ports:
+    - protocol: TCP
+      port: 5432
+  egress:
+  # Only DNS and NTP
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: UDP
+      port: 123
+
+---
+# Network Policy for Redis Layer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-redis-network-policy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: redis
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: api
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: worker
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: scheduler
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: redis-exporter
+    ports:
+    - protocol: TCP
+      port: 6379
+  egress:
+  # Only DNS
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+
+---
+# Network Policy for Monitoring Layer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-monitoring-network-policy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: monitoring
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+    ports:
+    - protocol: TCP
+      port: 9090  # Prometheus
+    - protocol: TCP
+      port: 3000  # Grafana
+    - protocol: TCP
+      port: 9093  # AlertManager
+  egress:
+  # Allow access to all app components for metrics collection
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+  # External notifications (email, Slack)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 587  # SMTP
+    - protocol: UDP
+      port: 53   # DNS
+
+---
+# Security Context Constraints for OpenShift (if applicable)
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: hyperopt-scc
+  labels:
+    app: hyperopt-platform
+    component: security
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegedContainer: false
+allowPrivilegeEscalation: false
+allowedCapabilities: []
+allowedFlexVolumes: []
+allowedUnsafeSysctls: []
+defaultAddCapabilities: []
+defaultAllowPrivilegeEscalation: false
+forbiddenSysctls:
+  - "*"
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 1000
+      max: 65535
+groups: []
+priority: 10
+readOnlyRootFilesystem: true
+requiredDropCapabilities:
+  - ALL
+runAsUser:
+  type: MustRunAsNonRoot
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: MustRunAs
+  ranges:
+    - min: 1000
+      max: 65535
+users: []
+volumes:
+  - configMap
+  - downwardAPI
+  - emptyDir
+  - persistentVolumeClaim
+  - projected
+  - secret
+
+---
+# OPA Gatekeeper Constraint Template for Resource Limits
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: hyperoptrequiredresources
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  crd:
+    spec:
+      names:
+        kind: HyperOptRequiredResources
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            limits:
+              type: array
+              items:
+                type: string
+            requests:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package hyperoptrequiredresources
+        
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          required := input.parameters.requests[_]
+          not container.resources.requests[required]
+          msg := sprintf("Container %v is missing required resource request: %v", [container.name, required])
+        }
+        
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          required := input.parameters.limits[_]
+          not container.resources.limits[required]
+          msg := sprintf("Container %v is missing required resource limit: %v", [container.name, required])
+        }
+
+---
+# Gatekeeper Constraint for HyperOpt Pods
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: HyperOptRequiredResources
+metadata:
+  name: hyperopt-must-have-resources
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
+    namespaces: ["hyperopt-production", "hyperopt-staging"]
+    labelSelector:
+      matchLabels:
+        app: hyperopt-platform
+  parameters:
+    requests: ["memory", "cpu"]
+    limits: ["memory", "cpu"]
+
+---
+# Admission Controller for Security Scanning
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionWebhook
+metadata:
+  name: hyperopt-security-webhook
+  labels:
+    app: hyperopt-platform
+    component: security
+webhooks:
+- name: security.hyperopt.company
+  clientConfig:
+    service:
+      name: hyperopt-security-webhook
+      namespace: hyperopt-production
+      path: "/validate"
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["apps"]
+    apiVersions: ["v1"]
+    resources: ["deployments"]
+  namespaceSelector:
+    matchLabels:
+      app: hyperopt-platform
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  failurePolicy: Fail
+
+---
+# Security Monitoring ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hyperopt-security-monitor
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security
+spec:
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    honorLabels: true
+  namespaceSelector:
+    matchNames:
+    - hyperopt-production
+
+---
+# Security Events and Audit Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hyperopt-security-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security
+data:
+  audit-policy.yaml: |
+    apiVersion: audit.k8s.io/v1
+    kind: Policy
+    rules:
+    # Log authentication and authorization events
+    - level: Metadata
+      namespaces: ["hyperopt-production", "hyperopt-staging"]
+      verbs: ["create", "update", "patch", "delete"]
+      resources:
+      - group: ""
+        resources: ["secrets", "configmaps"]
+      - group: "rbac.authorization.k8s.io"
+        resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+    
+    # Log pod creation and modification
+    - level: Request
+      namespaces: ["hyperopt-production", "hyperopt-staging"]
+      verbs: ["create", "update", "patch"]
+      resources:
+      - group: ""
+        resources: ["pods"]
+      - group: "apps"
+        resources: ["deployments", "statefulsets"]
+    
+    # Log access to sensitive endpoints
+    - level: RequestResponse
+      namespaces: ["hyperopt-production"]
+      verbs: ["get", "list"]
+      resources:
+      - group: ""
+        resources: ["secrets"]
+        resourceNames: ["hyperopt-secrets"]
+    
+    # Exclude health checks and metrics
+    - level: None
+      users: ["system:kube-proxy"]
+      verbs: ["watch"]
+      resources:
+      - group: ""
+        resources: ["endpoints", "services"]
+    
+    # Default catch-all
+    - level: Metadata
+      omitStages:
+        - RequestReceived
+
+  security-rules.yaml: |
+    # Falco Rules for HyperOpt Security Monitoring
+    - rule: HyperOpt Sensitive File Access
+      desc: Detect access to sensitive files in HyperOpt containers
+      condition: >
+        open_read and container and
+        k8s.ns.name in (hyperopt-production, hyperopt-staging) and
+        (fd.filename in (/etc/passwd, /etc/shadow, /root/.ssh/id_rsa) or
+         fd.name startswith /var/lib/postgresql/data/)
+      output: >
+        Sensitive file opened in HyperOpt container
+        (user=%user.name command=%proc.cmdline file=%fd.name
+         container_id=%container.id image=%container.image.repository)
+      priority: WARNING
+      tags: [filesystem, hyperopt]
+    
+    - rule: HyperOpt Privilege Escalation
+      desc: Detect privilege escalation in HyperOpt containers
+      condition: >
+        spawned_process and container and
+        k8s.ns.name in (hyperopt-production, hyperopt-staging) and
+        ((proc.name in (su, sudo, doas) and not user.name=root) or
+         (proc.args contains "--privileged"))
+      output: >
+        Privilege escalation detected in HyperOpt container
+        (user=%user.name command=%proc.cmdline container_id=%container.id)
+      priority: CRITICAL
+      tags: [process, hyperopt]
+    
+    - rule: HyperOpt Network Anomaly
+      desc: Detect unusual network activity in HyperOpt containers
+      condition: >
+        inbound_outbound and container and
+        k8s.ns.name in (hyperopt-production, hyperopt-staging) and
+        (fd.sport!=443 and fd.sport!=80 and fd.sport!=5432 and fd.sport!=6379) and
+        not k8s.pod.name contains monitoring
+      output: >
+        Unusual network connection in HyperOpt container
+        (connection=%fd.name sport=%fd.sport dport=%fd.dport
+         container_id=%container.id proc=%proc.name)
+      priority: WARNING
+      tags: [network, hyperopt] 

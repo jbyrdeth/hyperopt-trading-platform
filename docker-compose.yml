@@ -1,0 +1,325 @@
+version: '3.8'
+
+services:
+  # Database Services
+  postgres:
+    image: postgres:15
+    container_name: hyperopt-postgres
+    environment:
+      POSTGRES_DB: hyperopt_dev
+      POSTGRES_USER: hyperopt
+      POSTGRES_PASSWORD: dev_password_123
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - hyperopt-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hyperopt -d hyperopt_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: hyperopt-redis
+    command: redis-server --appendonly yes --requirepass dev_redis_password
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - hyperopt-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Core Application Services
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+      args:
+        BUILD_DATE: ${BUILD_DATE:-2024-01-01T00:00:00Z}
+        VCS_REF: ${GIT_COMMIT:-dev}
+        VERSION: ${VERSION:-dev}
+    container_name: hyperopt-api
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://hyperopt:dev_password_123@postgres:5432/hyperopt_dev
+      - REDIS_URL=redis://:dev_redis_password@redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - WORKERS=1
+      - MAX_CONCURRENT_OPTIMIZATIONS=5
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+      args:
+        BUILD_DATE: ${BUILD_DATE:-2024-01-01T00:00:00Z}
+        VCS_REF: ${GIT_COMMIT:-dev}
+        VERSION: ${VERSION:-dev}
+    container_name: hyperopt-worker
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://hyperopt:dev_password_123@postgres:5432/hyperopt_dev
+      - REDIS_URL=redis://:dev_redis_password@redis:6379/0
+      - CELERY_BROKER_URL=redis://:dev_redis_password@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:dev_redis_password@redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - LOG_LEVEL=DEBUG
+      - WORKER_CONCURRENCY=2
+      - WORKER_PREFETCH_MULTIPLIER=1
+      - WORKER_MAX_TASKS_PER_CHILD=50
+      - OPTIMIZATION_TIMEOUT=1800
+      - MAX_MEMORY_PER_WORKER=2GB
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./strategies:/app/strategies:ro
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./cache:/app/cache
+      - ./results:/app/results
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2GB
+          cpus: '2.0'
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.scheduler
+      args:
+        BUILD_DATE: ${BUILD_DATE:-2024-01-01T00:00:00Z}
+        VCS_REF: ${GIT_COMMIT:-dev}
+        VERSION: ${VERSION:-dev}
+    container_name: hyperopt-scheduler
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://hyperopt:dev_password_123@postgres:5432/hyperopt_dev
+      - REDIS_URL=redis://:dev_redis_password@redis:6379/0
+      - CELERY_BROKER_URL=redis://:dev_redis_password@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:dev_redis_password@redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - LOG_LEVEL=DEBUG
+      - SCHEDULER_INTERVAL=60
+      - CLEANUP_INTERVAL=3600
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./schedules:/app/schedules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+
+  # Monitoring and Management Services
+  nginx:
+    image: nginx:alpine
+    container_name: hyperopt-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/ssl/certs
+      - ./static:/var/www/static:ro
+    depends_on:
+      - api
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hyperopt-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hyperopt-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin_password_123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=redis-datasource,postgres-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: hyperopt-redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:dev_redis_password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hyperopt-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@hyperopt.local
+      - PGADMIN_DEFAULT_PASSWORD=admin_password_123
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - "8082:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+
+  # Development and Testing Services
+  jupyter:
+    image: jupyter/scipy-notebook:latest
+    container_name: hyperopt-jupyter
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=dev_token_123
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./src:/home/jovyan/work/src:ro
+      - ./data:/home/jovyan/work/data
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+
+  # Load Testing Service
+  locust:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.locust
+    container_name: hyperopt-locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./tests/load:/locust
+    environment:
+      - LOCUST_HOST=http://api:8000
+      - LOCUST_USERS=10
+      - LOCUST_SPAWN_RATE=2
+    depends_on:
+      - api
+    networks:
+      - hyperopt-network
+    profiles:
+      - testing
+
+  # File Browser for Development
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: hyperopt-filebrowser
+    ports:
+      - "8083:80"
+    volumes:
+      - ./:/srv
+      - ./docker/filebrowser/filebrowser.json:/.filebrowser.json
+    environment:
+      - FB_BASEURL=/files
+    networks:
+      - hyperopt-network
+    restart: unless-stopped
+    profiles:
+      - development
+
+networks:
+  hyperopt-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  pgadmin_data:
+    driver: local 

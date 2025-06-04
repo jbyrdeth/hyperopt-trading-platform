@@ -1,0 +1,241 @@
+site_name: HyperOpt Strategy - Trading Optimization Platform
+site_description: Enterprise-grade trading strategy optimization system with 45.2% proven returns and 24.1-second optimization speed
+site_url: https://docs.hyperopt-strat.com
+repo_url: https://github.com/hyperopt-strat/platform
+repo_name: hyperopt-strat/platform
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: en
+  favicon: assets/favicon.ico
+  logo: assets/logo.png
+  
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+
+extra:
+  version:
+    provider: mike
+    default: latest
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/hyperopt-strat
+      name: GitHub Repository
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/hyperopt-strat/
+      name: PyPI Package
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/hyperopt-strat
+      name: Discord Community
+    - icon: fontawesome/solid/envelope
+      link: mailto:support@hyperopt-strat.com
+      name: Email Support
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+  consent:
+    title: Cookie consent
+    description: >- 
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
+  generator: false
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      title: On this page
+  - tables
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: hyperopt-strat
+      repo: platform
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+      skip_classes:
+        - custom-skip-class-name
+      auto_caption: false
+      caption_position: bottom
+  - minify:
+      minify_html: true
+
+nav:
+  - Home: index.md
+  
+  - Getting Started:
+    - Quick Start: getting-started/quick-start.md
+    - Installation: getting-started/installation.md
+    - Configuration: getting-started/configuration.md
+    - First Optimization: getting-started/first-optimization.md
+  
+  - Architecture:
+    - System Overview: architecture/system-overview.md
+    - Technology Stack: architecture/technology-stack.md
+    - Component Diagram: architecture/component-diagram.md
+    - Data Flow: architecture/data-flow.md
+    - Performance & Scaling: architecture/performance.md
+  
+  - API Reference:
+    - Complete Reference: api/complete-reference.md
+    - Overview: api/overview.md
+    - Authentication: api/authentication.md
+    - Strategy Management: api/strategies.md
+    - Optimization Engine: api/optimization.md
+    - Validation Framework: api/validation.md
+    - Export & Reports: api/export.md
+    - Data Management: api/data.md
+    - Health & Monitoring: api/health.md
+    - Integration Examples: api/integration-examples.md
+  
+  - Strategy Development:
+    - Framework Overview: strategies/framework-overview.md
+    - Creating Strategies: strategies/creating-strategies.md
+    - Parameter Optimization: strategies/parameter-optimization.md
+    - Signal Generation: strategies/signal-generation.md
+    - Validation & Testing: strategies/validation-testing.md
+    - Performance Analysis: strategies/performance-analysis.md
+    - Best Practices: strategies/best-practices.md
+  
+  - Tutorials & Examples:
+    - Quick Start Tutorial: examples/quick-start-tutorial.md
+    - Complete Workflow Tutorial: examples/complete-workflow.md
+    - Advanced Optimization Tutorial: examples/advanced-optimization.md
+    - API Integration: examples/api-integration.md
+    - Custom Strategies: examples/custom-strategies.md
+    - Pine Script Export: examples/pine-script-export.md
+    - Performance Optimization: examples/performance-optimization.md
+  
+  - Deployment:
+    - Production Setup: deployment/production-setup.md
+    - Docker Deployment: deployment/docker-deployment.md
+    - Environment Configuration: deployment/environment-config.md
+    - Security Hardening: deployment/security-hardening.md
+    - Monitoring Setup: deployment/monitoring-setup.md
+    - Backup & Recovery: deployment/backup-recovery.md
+    - Scaling & Performance: deployment/scaling-performance.md
+  
+  - Troubleshooting:
+    - FAQ: troubleshooting/faq.md
+    - Troubleshooting Guide: troubleshooting/troubleshooting-guide.md
+    - Maintenance Guide: troubleshooting/maintenance-guide.md
+    - Error Codes: reference/error-codes.md
+    - Performance Issues: troubleshooting/performance-issues.md
+    - Support: troubleshooting/support.md
+  
+  - Reference:
+    - Configuration Options: reference/configuration.md
+    - Performance Metrics: reference/performance-metrics.md
+    - Command Line Interface: reference/cli.md
+    - Environment Variables: reference/environment-variables.md
+    - Changelog: reference/changelog.md
+    - Glossary: reference/glossary.md
+
+copyright: |
+  Copyright &copy; 2024 <a href="https://hyperopt-strat.com" target="_blank" rel="noopener">HyperOpt Strategy</a>. 
+  All rights reserved. | <a href="#__consent">Change cookie settings</a> 

@@ -1,0 +1,106 @@
+# Multi-stage build for HyperOpt Strategy Platform Worker
+FROM python:3.9-slim as builder
+
+# Set build arguments
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+
+# Add metadata
+LABEL org.opencontainers.image.title="HyperOpt Strategy Platform Worker"
+LABEL org.opencontainers.image.description="Strategy optimization worker for background processing"
+LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.created=$BUILD_DATE
+LABEL org.opencontainers.image.revision=$VCS_REF
+LABEL org.opencontainers.image.vendor="HyperOpt Team"
+
+# Install system dependencies including numerical libraries
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    gfortran \
+    python3-dev \
+    libpq-dev \
+    liblapack-dev \
+    libblas-dev \
+    libhdf5-dev \
+    pkg-config \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt requirements-worker.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements-worker.txt
+
+# Copy source code
+COPY src/ ./src/
+COPY config/ ./config/
+COPY scripts/ ./scripts/
+COPY strategies/ ./strategies/
+
+# Production stage
+FROM python:3.9-slim as production
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    liblapack3 \
+    libblas3 \
+    libhdf5-103 \
+    curl \
+    htop \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN groupadd -r worker && useradd -r -g worker worker
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /app ./
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/logs /app/data /app/temp /app/cache /app/results && \
+    chown -R worker:worker /app
+
+# Copy worker scripts
+COPY docker/scripts/worker-entrypoint.sh /usr/local/bin/
+COPY docker/scripts/worker-healthcheck.py /usr/local/bin/
+RUN chmod +x /usr/local/bin/worker-entrypoint.sh
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV ENVIRONMENT=production
+ENV WORKER_TYPE=optimization
+ENV CELERY_BROKER_URL=redis://redis:6379/0
+ENV CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+# Worker-specific settings
+ENV WORKER_CONCURRENCY=2
+ENV WORKER_PREFETCH_MULTIPLIER=1
+ENV WORKER_MAX_TASKS_PER_CHILD=100
+ENV OPTIMIZATION_TIMEOUT=3600
+ENV MAX_MEMORY_PER_WORKER=2GB
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=3 \
+    CMD python /usr/local/bin/worker-healthcheck.py
+
+# Switch to non-root user
+USER worker
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/worker-entrypoint.sh"]
+
+# Default command - Celery worker
+CMD ["celery", "-A", "src.workers.celery_app", "worker", "--loglevel=info", "--concurrency=2"] 

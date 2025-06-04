@@ -1,0 +1,877 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-scanning-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+data:
+  trivy-config.yaml: |
+    # Trivy Configuration for Container Scanning
+    cache:
+      dir: /tmp/trivy/.cache
+    db:
+      repository: ghcr.io/aquasecurity/trivy-db
+    log:
+      level: INFO
+    scan:
+      security-checks: vuln,config
+      severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+      ignore-unfixed: false
+      skip-files: |
+        /usr/share/zoneinfo/*
+        /var/lib/apt/lists/*
+        /var/cache/apt/archives/*
+    report:
+      format: json
+      output: /tmp/trivy-reports/
+
+  clair-config.yaml: |
+    # Clair Configuration for Vulnerability Analysis
+    clair:
+      database:
+        type: pgsql
+        options:
+          source: postgres://clair:${CLAIR_DB_PASSWORD}@postgres-service:5432/clair?sslmode=require
+          cachesize: 16384
+      api:
+        addr: "0.0.0.0:6060"
+        timeout: 900s
+        paginationkey: "XxoPtCUzrUv4JN5dPtTxTPly2W8G1VY4h5pvGH0k"
+        cafile: "/etc/ssl/certs/ca.crt"
+        keyfile: "/etc/ssl/private/key.pem"
+        certfile: "/etc/ssl/certs/cert.pem"
+      updater:
+        interval: 2h0m0s
+        enabledupdaters:
+          - debian
+          - ubuntu
+          - rhel
+          - oracle
+          - alpine
+          - suse
+      notifier:
+        attempts: 3
+        renotifyinterval: 1h
+        http:
+          endpoint: "https://api.hyperopt.company/webhooks/security/vulnerabilities"
+          proxy: http://proxy.hyperopt.company:8080
+
+  zap-config.yaml: |
+    # OWASP ZAP Configuration for Web Application Security Testing
+    zap:
+      api:
+        host: "127.0.0.1"
+        port: 8080
+        key: "${ZAP_API_KEY}"
+      proxy:
+        host: "127.0.0.1"
+        port: 8090
+      spider:
+        maxdepth: 5
+        maxchildren: 10
+        recurse: true
+        acceptcookies: true
+        handleparameters: use_all
+        maxduration: 60
+      activescan:
+        policy: "High"
+        recurse: true
+        inscopeonly: false
+        maxruleid: 0
+        maxscandurationinmins: 0
+      reporting:
+        format: "json"
+        output: "/tmp/zap-reports/"
+      targets:
+        - "https://api.hyperopt.company"
+        - "https://app.hyperopt.company"
+        - "https://auth.hyperopt.company"
+
+  nuclei-config.yaml: |
+    # Nuclei Configuration for Vulnerability Scanning
+    nuclei:
+      target-url: "https://api.hyperopt.company"
+      templates-directory: "/nuclei-templates"
+      output-file: "/tmp/nuclei-reports/scan-results.json"
+      json-output: true
+      severity: "info,low,medium,high,critical"
+      tags: "cve,vulnerability,exposure,misconfiguration"
+      exclude-tags: "intrusive,dos"
+      timeout: 5
+      retries: 1
+      rate-limit: 150
+      bulk-size: 25
+      concurrency: 25
+      headers:
+        - "User-Agent: HyperOpt-Security-Scanner/1.0"
+        - "X-Security-Scan: true"
+
+---
+# Trivy Vulnerability Scanner
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trivy-scanner
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: trivy-scanner
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: trivy-scanner
+    spec:
+      serviceAccountName: trivy-scanner
+      containers:
+      - name: trivy
+        image: aquasec/trivy:0.44.1
+        command:
+        - sh
+        - -c
+        - |
+          # Update vulnerability database
+          trivy image --download-db-only
+          # Keep container running for scheduled scans
+          while true; do
+            echo "Trivy scanner ready..."
+            sleep 3600
+          done
+        env:
+        - name: TRIVY_CACHE_DIR
+          value: "/tmp/trivy/.cache"
+        - name: TRIVY_DB_REPOSITORY
+          value: "ghcr.io/aquasecurity/trivy-db"
+        volumeMounts:
+        - name: trivy-cache
+          mountPath: /tmp/trivy/.cache
+        - name: trivy-reports
+          mountPath: /tmp/trivy-reports
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
+          readOnly: true
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: trivy-cache
+        emptyDir: {}
+      - name: trivy-reports
+        persistentVolumeClaim:
+          claimName: security-reports-pvc
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+
+---
+# Clair Vulnerability Database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clair
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: clair
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: clair
+    spec:
+      serviceAccountName: clair
+      containers:
+      - name: clair
+        image: quay.io/coreos/clair:v4.7.1
+        ports:
+        - containerPort: 6060
+          name: api
+        - containerPort: 6061
+          name: health
+        env:
+        - name: CLAIR_CONF
+          value: "/etc/clair/config.yaml"
+        - name: CLAIR_MODE
+          value: "combo"
+        - name: CLAIR_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clair-secrets
+              key: db-password
+        volumeMounts:
+        - name: clair-config
+          mountPath: /etc/clair/config.yaml
+          subPath: clair-config.yaml
+        - name: clair-tls
+          mountPath: /etc/ssl/certs
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 6061
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 6061
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: clair-config
+        configMap:
+          name: security-scanning-config
+      - name: clair-tls
+        secret:
+          secretName: clair-tls
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clair
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  ports:
+  - port: 6060
+    targetPort: 6060
+    name: api
+  - port: 6061
+    targetPort: 6061
+    name: health
+  selector:
+    app: hyperopt-platform
+    component: clair
+
+---
+# OWASP ZAP Security Scanner
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zap-scanner
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: zap-scanner
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: zap-scanner
+    spec:
+      serviceAccountName: zap-scanner
+      containers:
+      - name: zap
+        image: owasp/zap2docker-stable:2.12.0
+        command:
+        - sh
+        - -c
+        - |
+          # Start ZAP daemon
+          zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.key=${ZAP_API_KEY}
+        ports:
+        - containerPort: 8080
+          name: zap-api
+        - containerPort: 8090
+          name: zap-proxy
+        env:
+        - name: ZAP_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: zap-secrets
+              key: api-key
+        - name: ZAP_PROXY_PORT
+          value: "8090"
+        volumeMounts:
+        - name: zap-reports
+          mountPath: /tmp/zap-reports
+        - name: zap-config
+          mountPath: /zap/config.yaml
+          subPath: zap-config.yaml
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+      volumes:
+      - name: zap-reports
+        persistentVolumeClaim:
+          claimName: security-reports-pvc
+      - name: zap-config
+        configMap:
+          name: security-scanning-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zap-scanner
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: zap-api
+  - port: 8090
+    targetPort: 8090
+    name: zap-proxy
+  selector:
+    app: hyperopt-platform
+    component: zap-scanner
+
+---
+# Nuclei Vulnerability Scanner
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nuclei-scanner
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: nuclei-scanner
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: nuclei-scanner
+    spec:
+      serviceAccountName: nuclei-scanner
+      containers:
+      - name: nuclei
+        image: projectdiscovery/nuclei:v2.9.15
+        command:
+        - sh
+        - -c
+        - |
+          # Update nuclei templates
+          nuclei -update-templates
+          # Keep container running for scheduled scans
+          while true; do
+            echo "Nuclei scanner ready..."
+            sleep 3600
+          done
+        volumeMounts:
+        - name: nuclei-reports
+          mountPath: /tmp/nuclei-reports
+        - name: nuclei-templates
+          mountPath: /nuclei-templates
+        - name: nuclei-config
+          mountPath: /nuclei-config.yaml
+          subPath: nuclei-config.yaml
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: nuclei-reports
+        persistentVolumeClaim:
+          claimName: security-reports-pvc
+      - name: nuclei-templates
+        emptyDir: {}
+      - name: nuclei-config
+        configMap:
+          name: security-scanning-config
+
+---
+# Persistent Volume for Security Reports
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: security-reports-pvc
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: fast-ssd
+
+---
+# Service Accounts
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trivy-scanner
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: clair
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zap-scanner
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nuclei-scanner
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+
+---
+# Secrets for Security Scanners
+apiVersion: v1
+kind: Secret
+metadata:
+  name: clair-secrets
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+type: Opaque
+data:
+  db-password: ${BASE64_CLAIR_DB_PASSWORD}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zap-secrets
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+type: Opaque
+data:
+  api-key: ${BASE64_ZAP_API_KEY}
+
+---
+# CronJob for Scheduled Security Scans
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: security-scan-cronjob
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: security-scanner
+            image: ghcr.io/hyperopt/security-scanner:latest
+            command:
+            - python
+            - /app/run_security_scans.py
+            env:
+            - name: TRIVY_API_URL
+              value: "http://trivy-scanner:8080"
+            - name: CLAIR_API_URL
+              value: "http://clair:6060"
+            - name: ZAP_API_URL
+              value: "http://zap-scanner:8080"
+            - name: NUCLEI_REPORTS_PATH
+              value: "/tmp/nuclei-reports"
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hyperopt-secrets
+                  key: SLACK_WEBHOOK_URL
+                  optional: true
+            - name: EMAIL_SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: hyperopt-secrets
+                  key: EMAIL_SMTP_HOST
+                  optional: true
+            volumeMounts:
+            - name: security-reports
+              mountPath: /tmp/security-reports
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "200m"
+              limits:
+                memory: "1Gi"
+                cpu: "500m"
+          volumes:
+          - name: security-reports
+            persistentVolumeClaim:
+              claimName: security-reports-pvc
+          restartPolicy: OnFailure
+      backoffLimit: 3
+
+---
+# RBAC for Security Scanners
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-production
+  name: security-scanner-role
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+  resourceNames: ["clair-secrets", "zap-secrets"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: trivy-scanner-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+subjects:
+- kind: ServiceAccount
+  name: trivy-scanner
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: security-scanner-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: clair-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+subjects:
+- kind: ServiceAccount
+  name: clair
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: security-scanner-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zap-scanner-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+subjects:
+- kind: ServiceAccount
+  name: zap-scanner
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: security-scanner-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nuclei-scanner-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+subjects:
+- kind: ServiceAccount
+  name: nuclei-scanner
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: security-scanner-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Falco Runtime Security Monitoring
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+data:
+  falco.yaml: |
+    rules_file:
+      - /etc/falco/falco_rules.yaml
+      - /etc/falco/falco_rules.local.yaml
+      - /etc/falco/k8s_audit_rules.yaml
+      - /etc/falco/rules.d
+    
+    time_format_iso_8601: true
+    json_output: true
+    json_include_output_property: true
+    json_include_tags_property: true
+    
+    priority: debug
+    buffered_outputs: false
+    
+    syscall_event_drops:
+      actions:
+        - log
+        - alert
+      rate: 0.03333
+      max_burst: 1000
+    
+    outputs:
+      rate: 1
+      max_burst: 1000
+    
+    syslog_output:
+      enabled: false
+    
+    file_output:
+      enabled: true
+      keep_alive: false
+      filename: /var/log/falco/events.log
+    
+    stdout_output:
+      enabled: true
+    
+    webserver:
+      enabled: true
+      listen_port: 8765
+      k8s_healthz_endpoint: /healthz
+      ssl_enabled: false
+      ssl_certificate: /etc/ssl/falco/server.pem
+    
+    grpc:
+      enabled: false
+      bind_address: "0.0.0.0:5060"
+      threadiness: 0
+    
+    grpc_output:
+      enabled: false
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+spec:
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: falco
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: falco
+    spec:
+      serviceAccountName: falco
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: falco
+        image: falcosecurity/falco:0.35.1
+        args:
+          - /usr/bin/falco
+          - --cri=/run/containerd/containerd.sock
+          - --k8s-api=https://kubernetes.default.svc.cluster.local
+        securityContext:
+          privileged: true
+        env:
+        - name: FALCO_K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: docker-socket
+        - mountPath: /run/containerd/containerd.sock
+          name: containerd-socket
+        - mountPath: /dev
+          name: dev-fs
+        - mountPath: /proc
+          name: proc-fs
+          readOnly: true
+        - mountPath: /boot
+          name: boot-fs
+          readOnly: true
+        - mountPath: /lib/modules
+          name: lib-modules
+          readOnly: true
+        - mountPath: /usr
+          name: usr-fs
+          readOnly: true
+        - mountPath: /etc/falco
+          name: falco-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+      - name: containerd-socket
+        hostPath:
+          path: /run/containerd/containerd.sock
+      - name: dev-fs
+        hostPath:
+          path: /dev
+      - name: proc-fs
+        hostPath:
+          path: /proc
+      - name: boot-fs
+        hostPath:
+          path: /boot
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+      - name: usr-fs
+        hostPath:
+          path: /usr
+      - name: falco-config
+        configMap:
+          name: falco-config
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: falco
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: falco-cluster-role
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "namespaces", "pods", "replicationcontrollers", "services"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: falco-cluster-role-binding
+  labels:
+    app: hyperopt-platform
+    component: security-scanning
+subjects:
+- kind: ServiceAccount
+  name: falco
+  namespace: hyperopt-production
+roleRef:
+  kind: ClusterRole
+  name: falco-cluster-role
+  apiGroup: rbac.authorization.k8s.io 

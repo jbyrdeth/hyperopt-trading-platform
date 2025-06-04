@@ -1,0 +1,501 @@
+name: HyperOpt Strategy Platform CI/CD
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      skip_tests:
+        description: 'Skip test execution'
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  # Code Quality and Security Checks
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black isort mypy safety bandit
+        pip install -r requirements.txt
+    
+    - name: Code formatting check
+      run: |
+        black --check --diff .
+        isort --check-only --diff .
+    
+    - name: Linting
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Type checking
+      run: mypy src/
+    
+    - name: Security vulnerability check
+      run: |
+        safety check
+        bandit -r src/ -f json -o bandit-report.json
+    
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-report
+        path: bandit-report.json
+
+  # Unit and Integration Tests
+  test-suite:
+    runs-on: ubuntu-latest
+    needs: code-quality
+    if: ${{ !inputs.skip_tests }}
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-test.txt
+    
+    - name: Set up test environment
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost/test_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+      run: |
+        python scripts/setup_test_db.py
+    
+    - name: Run unit tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost/test_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+      run: |
+        pytest tests/unit/ -v --cov=src --cov-report=xml --cov-report=html
+    
+    - name: Run integration tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost/test_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+      run: |
+        pytest tests/integration/ -v --maxfail=1
+    
+    - name: Run performance tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost/test_db
+        REDIS_URL: redis://localhost:6379/0
+      run: |
+        pytest tests/performance/ -v --benchmark-only
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: |
+          htmlcov/
+          pytest-report.xml
+
+  # Build and Push Container Images
+  build-images:
+    runs-on: ubuntu-latest
+    needs: [code-quality, test-suite]
+    if: always() && (needs.code-quality.result == 'success' && (needs.test-suite.result == 'success' || inputs.skip_tests))
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+    
+    - name: Build and push API image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./docker/Dockerfile.api
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Build and push Worker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./docker/Dockerfile.worker
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-worker:${{ steps.meta.outputs.version }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Build and push Scheduler image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./docker/Dockerfile.scheduler
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-scheduler:${{ steps.meta.outputs.version }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+  # Security Scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build-images
+    steps:
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ needs.build-images.outputs.image-tag }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Deploy to Staging
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [build-images, security-scan]
+    if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+    
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'v3.12.0'
+    
+    - name: Configure kubeconfig
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+        echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+    
+    - name: Deploy to staging
+      run: |
+        helm upgrade --install hyperopt-staging ./helm/hyperopt-platform \
+          --namespace hyperopt-staging \
+          --create-namespace \
+          --set image.tag=${{ needs.build-images.outputs.image-digest }} \
+          --set environment=staging \
+          --set ingress.hosts[0].host=staging.hyperopt.company.com \
+          --values ./helm/values-staging.yaml \
+          --wait --timeout=10m
+    
+    - name: Run smoke tests
+      run: |
+        kubectl wait --for=condition=ready pod -l app=hyperopt-api -n hyperopt-staging --timeout=300s
+        curl -f http://staging.hyperopt.company.com/health || exit 1
+    
+    - name: Notify staging deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            channel: '#deployments',
+            username: 'GitHub Actions',
+            icon_emoji: ':rocket:',
+            text: '🚀 Staging deployment successful!\nVersion: ${{ needs.build-images.outputs.image-tag }}\nEnvironment: staging.hyperopt.company.com'
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Production Deployment (Manual Approval Required)
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [build-images, security-scan, deploy-staging]
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+    
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'v3.12.0'
+    
+    - name: Configure kubeconfig
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+    
+    - name: Backup current deployment
+      run: |
+        kubectl get deployment hyperopt-api -n hyperopt-production -o yaml > deployment-backup.yaml
+    
+    - name: Deploy to production (Blue-Green)
+      run: |
+        # Deploy to green environment
+        helm upgrade --install hyperopt-green ./helm/hyperopt-platform \
+          --namespace hyperopt-production \
+          --set image.tag=${{ needs.build-images.outputs.image-digest }} \
+          --set environment=production \
+          --set deployment.color=green \
+          --set service.selector.color=green \
+          --values ./helm/values-production.yaml \
+          --wait --timeout=15m
+    
+    - name: Health check green environment
+      run: |
+        kubectl wait --for=condition=ready pod -l app=hyperopt-api,color=green -n hyperopt-production --timeout=600s
+        
+        # Internal health check
+        kubectl port-forward service/hyperopt-api-green 8080:80 -n hyperopt-production &
+        sleep 10
+        curl -f http://localhost:8080/health || exit 1
+        kill %1
+    
+    - name: Switch traffic to green (Blue-Green deployment)
+      run: |
+        # Update service to point to green deployment
+        kubectl patch service hyperopt-api -n hyperopt-production -p '{"spec":{"selector":{"color":"green"}}}'
+        
+        # Wait for traffic switch
+        sleep 30
+    
+    - name: Verify production deployment
+      run: |
+        curl -f https://api.hyperopt.company.com/health || exit 1
+        
+        # Run production smoke tests
+        kubectl apply -f k8s/tests/smoke-tests.yaml -n hyperopt-production
+        kubectl wait --for=condition=complete job/smoke-tests -n hyperopt-production --timeout=300s
+    
+    - name: Clean up old blue deployment
+      run: |
+        helm uninstall hyperopt-blue -n hyperopt-production || true
+        
+        # Rename green to blue for next deployment
+        kubectl patch deployment hyperopt-api -n hyperopt-production -p '{"spec":{"selector":{"matchLabels":{"color":"blue"}},"template":{"metadata":{"labels":{"color":"blue"}}}}}'
+    
+    - name: Upload deployment artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-artifacts
+        path: |
+          deployment-backup.yaml
+          kubeconfig
+    
+    - name: Notify production deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            channel: '#deployments',
+            username: 'GitHub Actions',
+            icon_emoji: ':white_check_mark:',
+            text: '✅ Production deployment successful!\nVersion: ${{ needs.build-images.outputs.image-tag }}\nEnvironment: https://api.hyperopt.company.com\nDeployment time: ${{ steps.deployment.outputs.deployment-time }}'
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Rollback job (manual trigger only)
+  rollback-production:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'rollback'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure kubectl
+      uses: azure/setup-kubectl@v3
+    
+    - name: Configure kubeconfig
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+    
+    - name: Rollback to previous version
+      run: |
+        helm rollback hyperopt-platform -n hyperopt-production
+        kubectl rollout status deployment/hyperopt-api -n hyperopt-production --timeout=600s
+    
+    - name: Verify rollback
+      run: |
+        curl -f https://api.hyperopt.company.com/health || exit 1
+    
+    - name: Notify rollback
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            channel: '#deployments',
+            username: 'GitHub Actions',
+            icon_emoji: ':warning:',
+            text: '⚠️ Production rollback completed!\nEnvironment: https://api.hyperopt.company.com\nRollback time: $(date)'
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Performance Testing (Post-deployment)
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install load testing tools
+      run: |
+        pip install locust requests
+    
+    - name: Run load tests
+      run: |
+        locust -f tests/load/locustfile.py \
+          --host=https://staging.hyperopt.company.com \
+          --users=50 \
+          --spawn-rate=5 \
+          --run-time=5m \
+          --html=load-test-report.html \
+          --headless
+    
+    - name: Upload load test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: load-test-results
+        path: load-test-report.html
+
+  # Cleanup old artifacts
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always()
+    
+    steps:
+    - name: Delete old container images
+      run: |
+        # Keep only last 10 versions
+        echo "Cleaning up old container images..."
+        # Implementation would use GitHub API or registry API 

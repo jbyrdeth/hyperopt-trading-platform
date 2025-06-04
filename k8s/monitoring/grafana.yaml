@@ -1,0 +1,771 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: grafana
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        uid: prometheus-uid
+        editable: true
+        jsonData:
+          timeInterval: "15s"
+          queryTimeout: "60s"
+          httpMethod: "POST"
+      
+      - name: HyperOpt PostgreSQL
+        type: postgres
+        access: proxy
+        url: postgres-service:5432
+        database: hyperopt
+        user: $POSTGRES_USER
+        uid: postgres-uid
+        editable: true
+        jsonData:
+          sslmode: "disable"
+          maxOpenConns: 10
+          maxIdleConns: 2
+          connMaxLifetime: 14400
+        secureJsonData:
+          password: $POSTGRES_PASSWORD
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: grafana
+data:
+  grafana.ini: |
+    [server]
+    http_port = 3000
+    domain = grafana.hyperopt.company
+    root_url = https://grafana.hyperopt.company
+    serve_from_sub_path = false
+    
+    [database]
+    type = sqlite3
+    path = /var/lib/grafana/grafana.db
+    
+    [session]
+    provider = file
+    provider_config = /var/lib/grafana/sessions
+    
+    [analytics]
+    reporting_enabled = false
+    check_for_updates = false
+    
+    [security]
+    admin_user = admin
+    admin_password = $__file{/etc/grafana/admin-password}
+    cookie_secure = true
+    allow_embedding = false
+    
+    [users]
+    allow_sign_up = false
+    allow_org_create = false
+    auto_assign_org = true
+    auto_assign_org_role = Viewer
+    verify_email_enabled = false
+    
+    [auth]
+    disable_login_form = false
+    disable_signout_menu = false
+    
+    [auth.anonymous]
+    enabled = false
+    
+    [dashboards]
+    default_home_dashboard_path = /etc/grafana/provisioning/dashboards/hyperopt-overview.json
+    
+    [alerting]
+    enabled = true
+    execute_alerts = true
+    
+    [smtp]
+    enabled = true
+    host = smtp.sendgrid.net:587
+    user = apikey
+    password = $__env{SENDGRID_API_KEY}
+    from_address = alerts@hyperopt.company
+    from_name = HyperOpt Monitoring
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-provider
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: grafana
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    
+    providers:
+      - name: 'hyperopt-dashboards'
+        orgId: 1
+        folder: 'HyperOpt Platform'
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /etc/grafana/provisioning/dashboards
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-overview
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: grafana
+data:
+  hyperopt-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "HyperOpt Platform Overview",
+        "tags": ["hyperopt", "overview"],
+        "style": "dark",
+        "timezone": "browser",
+        "editable": true,
+        "hideControls": false,
+        "graphTooltip": 1,
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "timepicker": {
+          "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+          "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+        },
+        "refresh": "30s",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Active Optimizations",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(hyperopt_optimizations_running)",
+                "legendFormat": "Running",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "yellow", "value": 50},
+                    {"color": "red", "value": 100}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Optimization Success Rate (24h)",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "avg_over_time(hyperopt:optimization_success_rate_5m[24h]) * 100",
+                "legendFormat": "Success Rate",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "percent",
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": null},
+                    {"color": "yellow", "value": 80},
+                    {"color": "green", "value": 95}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Active Workers",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "hyperopt:active_workers",
+                "legendFormat": "Workers",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": null},
+                    {"color": "yellow", "value": 2},
+                    {"color": "green", "value": 4}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+          },
+          {
+            "id": 4,
+            "title": "Queue Length",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "hyperopt:queue_length",
+                "legendFormat": "Queued",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "yellow", "value": 10},
+                    {"color": "red", "value": 50}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+          },
+          {
+            "id": 5,
+            "title": "Optimization Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "hyperopt:optimization_rate_5m",
+                "legendFormat": "Optimizations/sec",
+                "refId": "A"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "ops/sec",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+          },
+          {
+            "id": 6,
+            "title": "Optimization Duration (P95)",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "hyperopt:optimization_duration_p95",
+                "legendFormat": "P95 Duration",
+                "refId": "A"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "seconds",
+                "min": 0
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+          },
+          {
+            "id": 7,
+            "title": "System Resource Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "hyperopt:cpu_utilization",
+                "legendFormat": "CPU %",
+                "refId": "A"
+              },
+              {
+                "expr": "hyperopt:memory_utilization",
+                "legendFormat": "Memory %",
+                "refId": "B"
+              }
+            ],
+            "yAxes": [
+              {
+                "label": "percentage",
+                "min": 0,
+                "max": 100
+              }
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16}
+          }
+        ]
+      }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-strategies
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: grafana
+data:
+  strategy-performance.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Strategy Performance Dashboard",
+        "tags": ["hyperopt", "strategies", "performance"],
+        "style": "dark",
+        "timezone": "browser",
+        "editable": true,
+        "time": {
+          "from": "now-7d",
+          "to": "now"
+        },
+        "refresh": "5m",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Top Performing Strategies (7d ROI)",
+            "type": "table",
+            "targets": [
+              {
+                "rawSql": "SELECT strategy_name, AVG(roi_percentage) as avg_roi, COUNT(*) as trades FROM optimization_results WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY strategy_name ORDER BY avg_roi DESC LIMIT 10",
+                "refId": "A"
+              }
+            ],
+            "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Strategy Category Performance",
+            "type": "piechart",
+            "targets": [
+              {
+                "rawSql": "SELECT category, AVG(roi_percentage) as avg_roi FROM strategies s JOIN optimization_results o ON s.id = o.strategy_id WHERE o.created_at > NOW() - INTERVAL '7 days' GROUP BY category",
+                "refId": "A"
+              }
+            ],
+            "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Daily ROI Trends by Strategy",
+            "type": "graph",
+            "targets": [
+              {
+                "rawSql": "SELECT DATE_TRUNC('day', created_at) as time, strategy_name, AVG(roi_percentage) as roi FROM optimization_results WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY time, strategy_name ORDER BY time",
+                "refId": "A"
+              }
+            ],
+            "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10}
+          },
+          {
+            "id": 4,
+            "title": "Risk-Adjusted Returns (Sharpe Ratio)",
+            "type": "table",
+            "targets": [
+              {
+                "rawSql": "SELECT strategy_name, AVG(sharpe_ratio) as avg_sharpe, AVG(max_drawdown) as avg_drawdown FROM optimization_results WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY strategy_name ORDER BY avg_sharpe DESC",
+                "refId": "A"
+              }
+            ],
+            "gridPos": {"h": 10, "w": 12, "x": 0, "y": 20}
+          },
+          {
+            "id": 5,
+            "title": "Optimization Distribution by Asset",
+            "type": "barchart",
+            "targets": [
+              {
+                "rawSql": "SELECT asset_symbol, COUNT(*) as optimizations FROM optimization_results WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY asset_symbol ORDER BY optimizations DESC LIMIT 15",
+                "refId": "A"
+              }
+            ],
+            "gridPos": {"h": 10, "w": 12, "x": 12, "y": 20}
+          }
+        ]
+      }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: grafana
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: grafana
+    spec:
+      serviceAccountName: hyperopt-monitoring
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.0.3
+        ports:
+        - containerPort: 3000
+          name: grafana
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD__FILE
+          value: /etc/grafana/admin-password
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: DATABASE_PASSWORD
+        - name: SENDGRID_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: SENDGRID_API_KEY
+              optional: true
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: grafana-config
+          mountPath: /etc/grafana/grafana.ini
+          subPath: grafana.ini
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: grafana-dashboards-provider
+          mountPath: /etc/grafana/provisioning/dashboards/dashboards.yaml
+          subPath: dashboards.yaml
+        - name: grafana-dashboard-overview
+          mountPath: /etc/grafana/provisioning/dashboards/hyperopt-overview.json
+          subPath: hyperopt-overview.json
+        - name: grafana-dashboard-strategies
+          mountPath: /etc/grafana/provisioning/dashboards/strategy-performance.json
+          subPath: strategy-performance.json
+        - name: grafana-admin-password
+          mountPath: /etc/grafana/admin-password
+          subPath: admin-password
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-storage-pvc
+      - name: grafana-config
+        configMap:
+          name: grafana-config
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources
+      - name: grafana-dashboards-provider
+        configMap:
+          name: grafana-dashboards-provider
+      - name: grafana-dashboard-overview
+        configMap:
+          name: grafana-dashboard-overview
+      - name: grafana-dashboard-strategies
+        configMap:
+          name: grafana-dashboard-strategies
+      - name: grafana-admin-password
+        secret:
+          secretName: hyperopt-secrets
+          items:
+          - key: GRAFANA_ADMIN_PASSWORD
+            path: admin-password
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: grafana
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: grafana
+  selector:
+    app: hyperopt-platform
+    component: grafana
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-storage-pvc
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: grafana-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
+
+---
+# Alert Manager Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: alertmanager
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.sendgrid.net:587'
+      smtp_from: 'alerts@hyperopt.company'
+      smtp_auth_username: 'apikey'
+      smtp_auth_password: $SENDGRID_API_KEY
+      
+    route:
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'web.hook'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'critical-alerts'
+      - match:
+          severity: warning
+        receiver: 'warning-alerts'
+      - match:
+          alertname: HighOptimizationFailureRate
+        receiver: 'optimization-alerts'
+    
+    receivers:
+    - name: 'web.hook'
+      webhook_configs:
+      - url: 'http://localhost:5001/'
+    
+    - name: 'critical-alerts'
+      email_configs:
+      - to: 'admin@hyperopt.company'
+        subject: '[CRITICAL] HyperOpt Platform Alert'
+        body: |
+          Alert: {{ .GroupLabels.alertname }}
+          Description: {{ range .Alerts }}{{ .Annotations.description }}{{ end }}
+          
+          Details:
+          {{ range .Alerts }}
+          - Alert: {{ .Annotations.summary }}
+          - Time: {{ .StartsAt }}
+          {{ end }}
+      
+      slack_configs:
+      - api_url: $SLACK_WEBHOOK_URL
+        channel: '#alerts-critical'
+        title: 'HyperOpt Critical Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    
+    - name: 'warning-alerts'
+      email_configs:
+      - to: 'alerts@hyperopt.company'
+        subject: '[WARNING] HyperOpt Platform Alert'
+        body: |
+          Alert: {{ .GroupLabels.alertname }}
+          Description: {{ range .Alerts }}{{ .Annotations.description }}{{ end }}
+    
+    - name: 'optimization-alerts'
+      email_configs:
+      - to: 'optimization-team@hyperopt.company'
+        subject: '[OPTIMIZATION] Performance Issue Detected'
+        body: |
+          Optimization Performance Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: alertmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: alertmanager
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: alertmanager
+    spec:
+      serviceAccountName: hyperopt-monitoring
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:v0.25.0
+        args:
+          - '--config.file=/etc/alertmanager/alertmanager.yml'
+          - '--storage.path=/alertmanager'
+          - '--web.external-url=https://alertmanager.hyperopt.company'
+        ports:
+        - containerPort: 9093
+          name: web
+        env:
+        - name: SENDGRID_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: SENDGRID_API_KEY
+              optional: true
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: SLACK_WEBHOOK_URL
+              optional: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: alertmanager-config
+          mountPath: /etc/alertmanager/
+        - name: alertmanager-storage
+          mountPath: /alertmanager
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9093
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9093
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: alertmanager-config
+        configMap:
+          name: alertmanager-config
+      - name: alertmanager-storage
+        persistentVolumeClaim:
+          claimName: alertmanager-storage-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: alertmanager
+spec:
+  ports:
+  - port: 9093
+    targetPort: 9093
+    name: web
+  selector:
+    app: hyperopt-platform
+    component: alertmanager
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-storage-pvc
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: alertmanager-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: fast-ssd 

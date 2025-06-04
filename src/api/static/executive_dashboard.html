@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Dashboard - HyperOpt Trading Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .positive { color: #27ae60; }
+        .negative { color: #e74c3c; }
+        .neutral { color: #3498db; }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .strategies-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .strategies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .strategy-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .strategy-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .strategy-metrics {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .select {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            margin: 0 10px;
+            font-size: 1em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Executive Dashboard</h1>
+            <p>Real-time insights into your algorithmic trading performance</p>
+        </div>
+
+        <div class="controls">
+            <select id="dateRange" class="select">
+                <option value="7d">Last 7 Days</option>
+                <option value="30d" selected>Last 30 Days</option>
+                <option value="90d">Last 90 Days</option>
+                <option value="1y">Last Year</option>
+                <option value="all">All Time</option>
+            </select>
+            <button class="btn" onclick="refreshDashboard()">Refresh Data</button>
+            <button class="btn" onclick="exportReport()">Export Report</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <h3>Loading dashboard data...</h3>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="dashboardContent" style="display: none;">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div id="totalROI" class="metric-value neutral">--</div>
+                    <div class="metric-label">Total ROI</div>
+                </div>
+                <div class="metric-card">
+                    <div id="sharpeRatio" class="metric-value neutral">--</div>
+                    <div class="metric-label">Sharpe Ratio</div>
+                </div>
+                <div class="metric-card">
+                    <div id="maxDrawdown" class="metric-value neutral">--</div>
+                    <div class="metric-label">Max Drawdown</div>
+                </div>
+                <div class="metric-card">
+                    <div id="winRate" class="metric-value neutral">--</div>
+                    <div class="metric-label">Win Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div id="totalTrades" class="metric-value neutral">--</div>
+                    <div class="metric-label">Total Trades</div>
+                </div>
+                <div class="metric-card">
+                    <div id="portfolioValue" class="metric-value neutral">--</div>
+                    <div class="metric-label">Portfolio Value</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="chart-container">
+                    <div class="chart-title">Portfolio Performance vs Benchmarks</div>
+                    <canvas id="performanceChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Risk Metrics</div>
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+
+            <div class="strategies-section">
+                <h2 class="chart-title">Top Performing Strategies</h2>
+                <div id="strategiesGrid" class="strategies-grid">
+                    <!-- Strategy cards will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let performanceChart = null;
+        let riskChart = null;
+        const API_BASE = '/api/v1/business';
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadDashboard, 30000);
+            
+            // Date range change handler
+            document.getElementById('dateRange').addEventListener('change', loadDashboard);
+        });
+
+        async function loadDashboard() {
+            showLoading(true);
+            hideError();
+            
+            try {
+                const dateRange = document.getElementById('dateRange').value;
+                const response = await axios.get(`${API_BASE}/dashboard/executive?date_range=${dateRange}`, {
+                    headers: {
+                        'X-API-Key': 'demo-key' // In production, get from secure storage
+                    }
+                });
+                
+                if (response.data.success) {
+                    updateDashboard(response.data.data);
+                    showDashboard(true);
+                } else {
+                    showError('Failed to load dashboard data');
+                }
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                showError('Error connecting to API: ' + (error.response?.data?.detail || error.message));
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update key metrics
+            updateMetric('totalROI', data.summary.total_roi, 'percentage');
+            updateMetric('sharpeRatio', data.summary.sharpe_ratio, 'decimal');
+            updateMetric('maxDrawdown', data.summary.max_drawdown, 'percentage');
+            updateMetric('winRate', data.summary.win_rate, 'percentage');
+            updateMetric('totalTrades', data.summary.total_trades, 'number');
+            updateMetric('portfolioValue', data.summary.portfolio_value, 'currency');
+            
+            // Update charts
+            updatePerformanceChart(data);
+            updateRiskChart(data);
+            
+            // Update strategies
+            updateStrategies(data.strategy_performance);
+        }
+
+        function updateMetric(elementId, value, type) {
+            const element = document.getElementById(elementId);
+            let formattedValue = '--';
+            let className = 'neutral';
+            
+            if (value !== null && value !== undefined) {
+                switch (type) {
+                    case 'percentage':
+                        formattedValue = (value * 100).toFixed(2) + '%';
+                        className = value > 0 ? 'positive' : (value < 0 ? 'negative' : 'neutral');
+                        break;
+                    case 'decimal':
+                        formattedValue = value.toFixed(2);
+                        className = value > 1 ? 'positive' : (value < 1 ? 'negative' : 'neutral');
+                        break;
+                    case 'currency':
+                        formattedValue = '$' + value.toLocaleString();
+                        className = 'neutral';
+                        break;
+                    case 'number':
+                        formattedValue = value.toLocaleString();
+                        className = 'neutral';
+                        break;
+                }
+            }
+            
+            element.textContent = formattedValue;
+            element.className = `metric-value ${className}`;
+        }
+
+        function updatePerformanceChart(data) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            const portfolioROI = data.summary.total_roi * 100;
+            const spyReturn = data.market_comparison?.benchmarks?.spy * 100 || 8;
+            const nasdaqReturn = data.market_comparison?.benchmarks?.nasdaq * 100 || 12;
+            
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Portfolio', 'S&P 500', 'NASDAQ'],
+                    datasets: [{
+                        label: 'Returns (%)',
+                        data: [portfolioROI, spyReturn, nasdaqReturn],
+                        backgroundColor: [
+                            portfolioROI > spyReturn ? '#27ae60' : '#e74c3c',
+                            '#3498db',
+                            '#9b59b6'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRiskChart(data) {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            
+            if (riskChart) {
+                riskChart.destroy();
+            }
+            
+            const riskMetrics = data.risk_metrics || {};
+            
+            riskChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Volatility', 'Max Drawdown', 'VaR 95%'],
+                    datasets: [{
+                        data: [
+                            Math.abs(riskMetrics.volatility || 0) * 100,
+                            Math.abs(data.summary.max_drawdown || 0) * 100,
+                            Math.abs(riskMetrics.var_95 || 0) * 100
+                        ],
+                        backgroundColor: ['#e74c3c', '#f39c12', '#e67e22'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateStrategies(strategyData) {
+            const container = document.getElementById('strategiesGrid');
+            container.innerHTML = '';
+            
+            const topStrategies = strategyData.top_performers || [];
+            
+            topStrategies.slice(0, 6).forEach(strategy => {
+                const card = document.createElement('div');
+                card.className = 'strategy-card';
+                
+                card.innerHTML = `
+                    <div class="strategy-name">${strategy.name}</div>
+                    <div class="strategy-metrics">
+                        <span>ROI: <strong>${(strategy.roi * 100).toFixed(2)}%</strong></span>
+                        <span>Status: <strong>${strategy.status}</strong></span>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            if (topStrategies.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No strategy data available</p>';
+            }
+        }
+
+        function refreshDashboard() {
+            loadDashboard();
+        }
+
+        async function exportReport() {
+            try {
+                const dateRange = document.getElementById('dateRange').value;
+                const response = await axios.post(`${API_BASE}/reports/export`, {
+                    report_type: 'executive_summary',
+                    format: 'pdf',
+                    date_range: dateRange,
+                    include_charts: true
+                }, {
+                    headers: {
+                        'X-API-Key': 'demo-key'
+                    }
+                });
+                
+                if (response.data.success) {
+                    alert(`Report queued for generation. Report ID: ${response.data.report_id}`);
+                } else {
+                    alert('Failed to queue report generation');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting report: ' + (error.response?.data?.detail || error.message));
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showDashboard(show) {
+            document.getElementById('dashboardContent').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 

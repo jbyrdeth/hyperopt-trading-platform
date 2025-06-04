@@ -1,0 +1,440 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-worker
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: worker
+    environment: production
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: worker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9091"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: hyperopt-worker
+      containers:
+      - name: worker
+        image: ghcr.io/hyperopt/hyperopt-platform-worker:latest
+        env:
+        - name: WORKER_TYPE
+          value: "optimization"
+        - name: DATABASE_URL
+          value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/$(REDIS_DB)"
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: CELERY_RESULT_BACKEND
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_PORT
+        - name: DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_NAME
+        - name: DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: DATABASE_PASSWORD
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_PORT
+        - name: REDIS_DB
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_DB
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: REDIS_PASSWORD
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: SECRET_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: ANTHROPIC_API_KEY
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: OPENAI_API_KEY
+        - name: PERPLEXITY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: PERPLEXITY_API_KEY
+        envFrom:
+        - configMapRef:
+            name: hyperopt-config
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import celery; app = celery.Celery('worker'); print('Worker alive')"
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import redis; r = redis.Redis.from_url('$(REDIS_URL)'); r.ping()"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: worker-logs
+          mountPath: /app/logs
+        - name: worker-cache
+          mountPath: /app/cache
+        - name: worker-results
+          mountPath: /app/results
+        - name: worker-temp
+          mountPath: /app/temp
+        - name: shared-data
+          mountPath: /app/data
+      volumes:
+      - name: worker-logs
+        emptyDir: {}
+      - name: worker-cache
+        emptyDir:
+          sizeLimit: 10Gi
+      - name: worker-results
+        emptyDir:
+          sizeLimit: 20Gi
+      - name: worker-temp
+        emptyDir:
+          sizeLimit: 5Gi
+      - name: shared-data
+        persistentVolumeClaim:
+          claimName: hyperopt-data-pvc
+      nodeSelector:
+        node-type: compute-intensive
+      tolerations:
+      - key: "compute-intensive"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values: ["worker"]
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperopt-worker-service
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: worker
+spec:
+  ports:
+  - port: 9091
+    targetPort: 9091
+    name: metrics
+  selector:
+    app: hyperopt-platform
+    component: worker
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hyperopt-worker-hpa
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hyperopt-worker
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
+  - type: External
+    external:
+      metric:
+        name: celery_queue_length
+        selector:
+          matchLabels:
+            queue: optimization
+      target:
+        type: AverageValue
+        averageValue: "10"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 120
+    scaleUp:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 200
+        periodSeconds: 60
+      - type: Pods
+        value: 5
+        periodSeconds: 60
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-worker
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: worker
+
+---
+# Specialized High-Memory Worker for Large Optimizations
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-worker-highmem
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: worker-highmem
+    environment: production
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: worker-highmem
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: worker-highmem
+    spec:
+      serviceAccountName: hyperopt-worker
+      containers:
+      - name: worker-highmem
+        image: ghcr.io/hyperopt/hyperopt-platform-worker:latest
+        env:
+        - name: WORKER_TYPE
+          value: "highmem_optimization"
+        - name: WORKER_CONCURRENCY
+          value: "1"
+        - name: MAX_MEMORY_PER_WORKER
+          value: "16GB"
+        - name: OPTIMIZATION_TIMEOUT
+          value: "7200"
+        envFrom:
+        - configMapRef:
+            name: hyperopt-config
+        - secretRef:
+            name: hyperopt-secrets
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "2000m"
+          limits:
+            memory: "32Gi"
+            cpu: "8000m"
+        volumeMounts:
+        - name: highmem-cache
+          mountPath: /app/cache
+        - name: shared-data
+          mountPath: /app/data
+      volumes:
+      - name: highmem-cache
+        emptyDir:
+          sizeLimit: 50Gi
+      - name: shared-data
+        persistentVolumeClaim:
+          claimName: hyperopt-data-pvc
+      nodeSelector:
+        node-type: memory-optimized
+      tolerations:
+      - key: "memory-optimized"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+
+---
+# Staging Worker Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-worker-staging
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: worker
+    environment: staging
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: worker
+    spec:
+      containers:
+      - name: worker
+        image: ghcr.io/hyperopt/hyperopt-platform-worker:staging
+        env:
+        - name: WORKER_TYPE
+          value: "optimization"
+        - name: DATABASE_URL
+          value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/$(REDIS_DB)"
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: CELERY_RESULT_BACKEND
+        envFrom:
+        - configMapRef:
+            name: hyperopt-config-staging
+        - secretRef:
+            name: hyperopt-secrets-staging
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: worker-cache
+          mountPath: /app/cache
+        - name: worker-temp
+          mountPath: /app/temp
+      volumes:
+      - name: worker-cache
+        emptyDir:
+          sizeLimit: 5Gi
+      - name: worker-temp
+        emptyDir:
+          sizeLimit: 2Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperopt-worker-service
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: worker
+spec:
+  ports:
+  - port: 9091
+    targetPort: 9091
+    name: metrics
+  selector:
+    app: hyperopt-platform
+    component: worker
+  type: ClusterIP 

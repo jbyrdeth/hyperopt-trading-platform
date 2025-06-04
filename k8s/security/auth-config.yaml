@@ -1,0 +1,615 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hyperopt-auth-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: auth
+data:
+  auth-settings.yaml: |
+    # Authentication Configuration
+    authentication:
+      jwt:
+        secret_key: ${JWT_SECRET_KEY}
+        algorithm: "HS256"
+        access_token_expire_minutes: 30
+        refresh_token_expire_days: 7
+        issuer: "hyperopt.company"
+        audience: "hyperopt-api"
+      
+      oauth2:
+        enabled: true
+        providers:
+          google:
+            client_id: ${GOOGLE_OAUTH_CLIENT_ID}
+            client_secret: ${GOOGLE_OAUTH_CLIENT_SECRET}
+            scopes: ["openid", "email", "profile"]
+            redirect_uri: "https://api.hyperopt.company/auth/google/callback"
+          
+          github:
+            client_id: ${GITHUB_OAUTH_CLIENT_ID}
+            client_secret: ${GITHUB_OAUTH_CLIENT_SECRET}
+            scopes: ["user:email"]
+            redirect_uri: "https://api.hyperopt.company/auth/github/callback"
+          
+          microsoft:
+            client_id: ${MICROSOFT_OAUTH_CLIENT_ID}
+            client_secret: ${MICROSOFT_OAUTH_CLIENT_SECRET}
+            tenant: "common"
+            scopes: ["openid", "email", "profile"]
+            redirect_uri: "https://api.hyperopt.company/auth/microsoft/callback"
+      
+      api_keys:
+        enabled: true
+        rotation_interval_days: 90
+        max_keys_per_user: 5
+        key_prefix: "hyperopt_"
+        encryption_key: ${API_KEY_ENCRYPTION_KEY}
+      
+      session:
+        secure: true
+        httponly: true
+        samesite: "strict"
+        max_age: 3600
+        domain: ".hyperopt.company"
+    
+    # Authorization Configuration
+    authorization:
+      rbac:
+        enabled: true
+        default_role: "user"
+        roles:
+          admin:
+            permissions:
+              - "users:read"
+              - "users:write"
+              - "users:delete"
+              - "strategies:read"
+              - "strategies:write"
+              - "strategies:delete"
+              - "optimizations:read"
+              - "optimizations:write"
+              - "optimizations:delete"
+              - "system:monitor"
+              - "system:configure"
+          
+          premium:
+            permissions:
+              - "strategies:read"
+              - "strategies:write"
+              - "optimizations:read"
+              - "optimizations:write"
+              - "premium:access"
+              - "export:pine_script"
+              - "export:pdf"
+              - "analytics:advanced"
+          
+          user:
+            permissions:
+              - "strategies:read"
+              - "optimizations:read"
+              - "optimizations:write"
+              - "export:basic"
+          
+          readonly:
+            permissions:
+              - "strategies:read"
+              - "optimizations:read"
+      
+      rate_limiting:
+        enabled: true
+        default_limits:
+          requests_per_minute: 60
+          requests_per_hour: 1000
+          requests_per_day: 10000
+        
+        tier_limits:
+          admin:
+            requests_per_minute: 1000
+            requests_per_hour: 50000
+            requests_per_day: 1000000
+          
+          premium:
+            requests_per_minute: 300
+            requests_per_hour: 10000
+            requests_per_day: 100000
+          
+          user:
+            requests_per_minute: 60
+            requests_per_hour: 1000
+            requests_per_day: 10000
+          
+          readonly:
+            requests_per_minute: 30
+            requests_per_hour: 500
+            requests_per_day: 5000
+      
+      ip_whitelist:
+        enabled: false
+        allowed_ips: []
+        admin_ips:
+          - "10.0.0.0/8"     # Internal network
+          - "172.16.0.0/12"  # Private network
+          - "192.168.0.0/16" # Local network
+
+  rate-limit-config.yaml: |
+    # Nginx Rate Limiting Configuration
+    http {
+      # Rate limiting zones
+      limit_req_zone $binary_remote_addr zone=api_limit:10m rate=60r/m;
+      limit_req_zone $binary_remote_addr zone=auth_limit:10m rate=10r/m;
+      limit_req_zone $binary_remote_addr zone=optimization_limit:10m rate=30r/m;
+      limit_req_zone $request_uri zone=endpoint_limit:10m rate=100r/m;
+      
+      # Connection limiting
+      limit_conn_zone $binary_remote_addr zone=addr:10m;
+      
+      # Security headers map
+      map $sent_http_content_type $security_headers {
+        ~*text/html "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' wss: https:; frame-ancestors 'none';";
+        ~*application/json "default-src 'none'; frame-ancestors 'none';";
+      }
+      
+      # API key validation
+      map $http_x_api_key $api_key_valid {
+        default 0;
+        ~^hyperopt_[a-zA-Z0-9]{32}$ 1;
+      }
+      
+      # User tier mapping
+      map $http_x_user_tier $rate_limit_zone {
+        default api_limit;
+        "admin" admin_limit;
+        "premium" premium_limit;
+        "user" api_limit;
+        "readonly" readonly_limit;
+      }
+    }
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hyperopt-auth-secrets
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: auth
+type: Opaque
+data:
+  # Base64 encoded secrets (replace with actual values)
+  JWT_SECRET_KEY: ${BASE64_JWT_SECRET_KEY}
+  API_KEY_ENCRYPTION_KEY: ${BASE64_API_KEY_ENCRYPTION_KEY}
+  GOOGLE_OAUTH_CLIENT_ID: ${BASE64_GOOGLE_OAUTH_CLIENT_ID}
+  GOOGLE_OAUTH_CLIENT_SECRET: ${BASE64_GOOGLE_OAUTH_CLIENT_SECRET}
+  GITHUB_OAUTH_CLIENT_ID: ${BASE64_GITHUB_OAUTH_CLIENT_ID}
+  GITHUB_OAUTH_CLIENT_SECRET: ${BASE64_GITHUB_OAUTH_CLIENT_SECRET}
+  MICROSOFT_OAUTH_CLIENT_ID: ${BASE64_MICROSOFT_OAUTH_CLIENT_ID}
+  MICROSOFT_OAUTH_CLIENT_SECRET: ${BASE64_MICROSOFT_OAUTH_CLIENT_SECRET}
+  SESSION_SECRET: ${BASE64_SESSION_SECRET}
+
+---
+# OAuth2 Proxy for additional authentication layer
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: oauth2-proxy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: oauth2-proxy
+    spec:
+      serviceAccountName: hyperopt-oauth2-proxy
+      containers:
+      - name: oauth2-proxy
+        image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
+        args:
+          - --provider=google
+          - --email-domain=*
+          - --upstream=http://hyperopt-api-service:80
+          - --http-address=0.0.0.0:4180
+          - --cookie-secure=true
+          - --cookie-httponly=true
+          - --cookie-samesite=strict
+          - --cookie-domain=.hyperopt.company
+          - --redirect-url=https://auth.hyperopt.company/oauth2/callback
+          - --whitelist-domain=.hyperopt.company
+          - --pass-basic-auth=false
+          - --pass-access-token=true
+          - --pass-user-headers=true
+          - --set-xauthrequest=true
+          - --skip-provider-button=false
+        env:
+        - name: OAUTH2_PROXY_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-auth-secrets
+              key: GOOGLE_OAUTH_CLIENT_ID
+        - name: OAUTH2_PROXY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-auth-secrets
+              key: GOOGLE_OAUTH_CLIENT_SECRET
+        - name: OAUTH2_PROXY_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-auth-secrets
+              key: SESSION_SECRET
+        ports:
+        - containerPort: 4180
+          name: http
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 4180
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 4180
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: oauth2-proxy
+spec:
+  ports:
+  - port: 4180
+    targetPort: 4180
+    name: http
+  selector:
+    app: hyperopt-platform
+    component: oauth2-proxy
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-oauth2-proxy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: oauth2-proxy
+
+---
+# API Key Management Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-keymanager
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: keymanager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: keymanager
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: keymanager
+    spec:
+      serviceAccountName: hyperopt-keymanager
+      containers:
+      - name: keymanager
+        image: ghcr.io/hyperopt/hyperopt-keymanager:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: REDIS_URL
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-auth-secrets
+              key: API_KEY_ENCRYPTION_KEY
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-auth-secrets
+              key: JWT_SECRET_KEY
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: keymanager-config
+          mountPath: /app/config
+      volumes:
+      - name: keymanager-config
+        configMap:
+          name: hyperopt-auth-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperopt-keymanager
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: keymanager
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    app: hyperopt-platform
+    component: keymanager
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-keymanager
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: keymanager
+
+---
+# JWT Token Validator Middleware
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-jwt-validator
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: jwt-validator
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: jwt-validator
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: jwt-validator
+    spec:
+      serviceAccountName: hyperopt-jwt-validator
+      containers:
+      - name: jwt-validator
+        image: ghcr.io/hyperopt/hyperopt-jwt-validator:latest
+        ports:
+        - containerPort: 9000
+          name: http
+        env:
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-auth-secrets
+              key: JWT_SECRET_KEY
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: REDIS_URL
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperopt-jwt-validator
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: jwt-validator
+spec:
+  ports:
+  - port: 9000
+    targetPort: 9000
+    name: http
+  selector:
+    app: hyperopt-platform
+    component: jwt-validator
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-jwt-validator
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: jwt-validator
+
+---
+# RBAC for Authentication Services
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-production
+  name: hyperopt-auth-role
+  labels:
+    app: hyperopt-platform
+    component: auth
+rules:
+- apiGroups: [""]
+  resources: ["secrets", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-oauth2-proxy-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: auth
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-oauth2-proxy
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: hyperopt-auth-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-keymanager-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: auth
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-keymanager
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: hyperopt-auth-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-jwt-validator-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: auth
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-jwt-validator
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: hyperopt-auth-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# CronJob for API Key Rotation
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hyperopt-key-rotation
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: key-rotation
+spec:
+  schedule: "0 2 1 * *"  # Monthly on the 1st at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: key-rotation
+            image: ghcr.io/hyperopt/hyperopt-keymanager:latest
+            command:
+            - python
+            - /app/scripts/rotate_keys.py
+            env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hyperopt-secrets
+                  key: DATABASE_URL
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hyperopt-auth-secrets
+                  key: API_KEY_ENCRYPTION_KEY
+            - name: NOTIFICATION_WEBHOOK
+              valueFrom:
+                secretKeyRef:
+                  name: hyperopt-secrets
+                  key: SLACK_WEBHOOK_URL
+                  optional: true
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "50m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+          restartPolicy: OnFailure
+      backoffLimit: 3 

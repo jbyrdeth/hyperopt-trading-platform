@@ -1,0 +1,514 @@
+# Trading Strategy Configuration
+# Defines all 65 trading strategies organized by category with their parameter spaces
+
+# =============================================================================
+# TREND FOLLOWING STRATEGIES (12)
+# =============================================================================
+trend_following:
+  MovingAverageCrossover:
+    description: "SMA/EMA crossovers with multiple periods"
+    parameters:
+      fast_period: [5, 50]  # Range for hyperopt
+      slow_period: [20, 200]
+      ma_type: ["SMA", "EMA", "WMA", "TEMA"]
+      signal_threshold: [0.001, 0.02]
+    
+  TripleMovingAverage:
+    description: "3 MA system (fast/medium/slow)"
+    parameters:
+      fast_period: [5, 20]
+      medium_period: [20, 50]
+      slow_period: [50, 200]
+      ma_type: ["SMA", "EMA"]
+      
+  MACDStrategy:
+    description: "MACD line, signal, histogram variations"
+    parameters:
+      fast_period: [8, 20]
+      slow_period: [20, 35]
+      signal_period: [5, 15]
+      histogram_threshold: [0.0, 0.1]
+      
+  MACDDivergence:
+    description: "MACD divergence detection"
+    parameters:
+      fast_period: [8, 20]
+      slow_period: [20, 35]
+      signal_period: [5, 15]
+      lookback_period: [10, 50]
+      
+  ADXTrend:
+    description: "ADX with directional indicators"
+    parameters:
+      adx_period: [10, 30]
+      adx_threshold: [20, 40]
+      di_threshold: [0.0, 0.05]
+      
+  ParabolicSAR:
+    description: "Parabolic SAR trend following"
+    parameters:
+      acceleration: [0.01, 0.05]
+      maximum: [0.1, 0.3]
+      
+  IchimokuStrategy:
+    description: "Complete Ichimoku cloud system"
+    parameters:
+      tenkan_period: [7, 12]
+      kijun_period: [20, 30]
+      senkou_span_b: [44, 60]
+      
+  DonchianBreakout:
+    description: "Donchian channel breakouts"
+    parameters:
+      period: [10, 50]
+      breakout_threshold: [0.0, 0.02]
+      
+  KeltnerChannelBreakout:
+    description: "Keltner channel trend following"
+    parameters:
+      period: [10, 30]
+      multiplier: [1.5, 3.0]
+      
+  SupertrendStrategy:
+    description: "Supertrend indicator"
+    parameters:
+      period: [7, 20]
+      multiplier: [2.0, 4.0]
+      
+  ZigZagTrend:
+    description: "ZigZag pattern trend identification"
+    parameters:
+      deviation: [3, 15]
+      depth: [5, 20]
+      
+  LinearRegressionTrend:
+    description: "Linear regression slope analysis"
+    parameters:
+      period: [10, 50]
+      slope_threshold: [0.001, 0.01]
+
+# =============================================================================
+# MEAN REVERSION STRATEGIES (10)
+# =============================================================================
+mean_reversion:
+  RSIStrategy:
+    description: "RSI overbought/oversold"
+    parameters:
+      rsi_period: [7, 30]
+      oversold: [15, 35]
+      overbought: [65, 85]
+      exit_signal: ["opposite", "middle", "trailing"]
+      
+  RSIDivergence:
+    description: "RSI divergence patterns"
+    parameters:
+      rsi_period: [7, 30]
+      lookback_period: [10, 50]
+      divergence_threshold: [5, 20]
+      
+  BollingerBands:
+    description: "Bollinger band squeeze/expansion"
+    parameters:
+      period: [10, 50]
+      std_dev: [1.5, 3.0]
+      squeeze_threshold: [0.1, 0.8]
+      entry_method: ["breakout", "reversion", "both"]
+      
+  BollingerBandsMeanReversion:
+    description: "BB mean reversion to middle"
+    parameters:
+      period: [10, 50]
+      std_dev: [1.5, 3.0]
+      reversion_threshold: [0.8, 1.0]
+      
+  StochasticStrategy:
+    description: "Stochastic oscillator"
+    parameters:
+      k_period: [10, 20]
+      d_period: [3, 10]
+      oversold: [15, 25]
+      overbought: [75, 85]
+      
+  WilliamsR:
+    description: "Williams %R"
+    parameters:
+      period: [10, 30]
+      oversold: [-85, -75]
+      overbought: [-25, -15]
+      
+  CommodityChannelIndex:
+    description: "CCI mean reversion"
+    parameters:
+      period: [10, 30]
+      oversold: [-150, -80]
+      overbought: [80, 150]
+      
+  DetrendendPriceOscillator:
+    description: "DPO cycles"
+    parameters:
+      period: [10, 30]
+      threshold: [0.01, 0.05]
+      
+  PriceOscillator:
+    description: "Price oscillator mean reversion"
+    parameters:
+      fast_period: [5, 15]
+      slow_period: [20, 40]
+      signal_period: [5, 15]
+      
+  MeanReversionChannel:
+    description: "Custom channel mean reversion"
+    parameters:
+      period: [10, 50]
+      channel_width: [0.02, 0.1]
+      reversion_threshold: [0.8, 1.0]
+
+# =============================================================================
+# MOMENTUM STRATEGIES (8)
+# =============================================================================
+momentum:
+  MomentumStrategy:
+    description: "Rate of change momentum"
+    parameters:
+      period: [5, 30]
+      threshold: [0.01, 0.1]
+      
+  RelativeStrengthMomentum:
+    description: "RS vs benchmark"
+    parameters:
+      period: [10, 50]
+      benchmark: ["BTC", "ETH", "market"]
+      threshold: [0.02, 0.1]
+      
+  PriceVolumeTrend:
+    description: "PVT momentum"
+    parameters:
+      period: [10, 30]
+      threshold: [0.01, 0.05]
+      
+  ChaikinMomentum:
+    description: "Chaikin money flow momentum"
+    parameters:
+      period: [10, 30]
+      threshold: [0.01, 0.05]
+      
+  UltimateOscillator:
+    description: "Ultimate oscillator"
+    parameters:
+      period1: [5, 10]
+      period2: [10, 20]
+      period3: [20, 30]
+      oversold: [20, 35]
+      overbought: [65, 80]
+      
+  AwesomeOscillator:
+    description: "Awesome oscillator (AO)"
+    parameters:
+      fast_period: [3, 8]
+      slow_period: [30, 40]
+      
+  AcceleratorOscillator:
+    description: "Accelerator oscillator (AC)"
+    parameters:
+      fast_period: [3, 8]
+      slow_period: [30, 40]
+      signal_period: [3, 8]
+      
+  TSIMomentum:
+    description: "True Strength Index"
+    parameters:
+      first_smoothing: [20, 30]
+      second_smoothing: [5, 15]
+      oversold: [-30, -20]
+      overbought: [20, 30]
+
+# =============================================================================
+# VOLUME-BASED STRATEGIES (6)
+# =============================================================================
+volume_based:
+  VolumeWeightedAverage:
+    description: "VWAP strategy"
+    parameters:
+      period: [10, 50]
+      deviation_threshold: [0.01, 0.05]
+      
+  OnBalanceVolume:
+    description: "OBV trend analysis"
+    parameters:
+      period: [10, 30]
+      signal_period: [5, 15]
+      
+  AccumulationDistribution:
+    description: "A/D line analysis"
+    parameters:
+      period: [10, 30]
+      signal_period: [5, 15]
+      
+  ChaikinMoneyFlow:
+    description: "CMF volume analysis"
+    parameters:
+      period: [10, 30]
+      threshold: [0.1, 0.3]
+      
+  VolumePriceConfirmation:
+    description: "Volume-price relationship"
+    parameters:
+      volume_period: [10, 30]
+      price_period: [10, 30]
+      correlation_threshold: [0.3, 0.8]
+      
+  VolumeBreakoutStrategy:
+    description: "Volume spike breakouts"
+    parameters:
+      volume_period: [10, 30]
+      volume_threshold: [1.5, 3.0]
+      price_threshold: [0.01, 0.05]
+
+# =============================================================================
+# VOLATILITY STRATEGIES (5)
+# =============================================================================
+volatility:
+  AverageTrueRange:
+    description: "ATR volatility trading"
+    parameters:
+      period: [10, 30]
+      multiplier: [1.0, 3.0]
+      
+  VIXStrategy:
+    description: "Volatility index trading"
+    parameters:
+      period: [10, 30]
+      threshold: [0.2, 0.8]
+      
+  BollingerBandsSqueeze:
+    description: "Low volatility squeeze"
+    parameters:
+      period: [10, 30]
+      std_dev: [1.5, 2.5]
+      squeeze_threshold: [0.1, 0.5]
+      
+  HistoricalVolatility:
+    description: "Historical vol trading"
+    parameters:
+      period: [10, 50]
+      threshold: [0.1, 0.5]
+      
+  GARCHVolatility:
+    description: "GARCH volatility model"
+    parameters:
+      p: [1, 3]
+      q: [1, 3]
+      threshold: [0.1, 0.5]
+
+# =============================================================================
+# MULTI-TIMEFRAME STRATEGIES (4)
+# =============================================================================
+multi_timeframe:
+  MultiTimeframeTrend:
+    description: "Trend alignment across timeframes"
+    parameters:
+      primary_timeframe: ["1H", "4H", "1D"]
+      secondary_timeframe: ["4H", "1D", "1W"]
+      alignment_threshold: [0.7, 1.0]
+      
+  HigherTimeframeBias:
+    description: "HTF direction, LTF entry"
+    parameters:
+      htf_timeframe: ["4H", "1D", "1W"]
+      ltf_timeframe: ["1H", "4H", "1D"]
+      bias_period: [10, 50]
+      
+  MultiTimeframeRSI:
+    description: "RSI across multiple timeframes"
+    parameters:
+      rsi_period: [10, 20]
+      timeframes: [["1H", "4H"], ["4H", "1D"]]
+      alignment_threshold: [0.8, 1.0]
+      
+  TimeframeMomentumSync:
+    description: "Momentum synchronization"
+    parameters:
+      momentum_period: [10, 30]
+      timeframes: [["1H", "4H"], ["4H", "1D"]]
+      sync_threshold: [0.7, 1.0]
+
+# =============================================================================
+# PATTERN RECOGNITION STRATEGIES (6)
+# =============================================================================
+pattern_recognition:
+  CandlestickPatterns:
+    description: "Doji, hammer, engulfing, etc."
+    parameters:
+      pattern_types: ["doji", "hammer", "engulfing", "harami"]
+      confirmation_period: [1, 5]
+      
+  SupportResistanceBreakout:
+    description: "S/R level breaks"
+    parameters:
+      lookback_period: [20, 100]
+      breakout_threshold: [0.01, 0.05]
+      volume_confirmation: [true, false]
+      
+  PivotPointStrategy:
+    description: "Pivot point trading"
+    parameters:
+      pivot_type: ["standard", "fibonacci", "camarilla"]
+      breakout_threshold: [0.01, 0.03]
+      
+  FibonacciRetracement:
+    description: "Fibonacci level trading"
+    parameters:
+      lookback_period: [20, 100]
+      retracement_levels: [0.382, 0.5, 0.618]
+      threshold: [0.01, 0.03]
+      
+  HarmonicPatterns:
+    description: "Gartley, butterfly patterns"
+    parameters:
+      pattern_types: ["gartley", "butterfly", "bat", "crab"]
+      tolerance: [0.01, 0.05]
+      
+  ChartPatternRecognition:
+    description: "Head & shoulders, triangles"
+    parameters:
+      pattern_types: ["head_shoulders", "triangle", "flag", "pennant"]
+      lookback_period: [20, 100]
+      confirmation_threshold: [0.02, 0.05]
+
+# =============================================================================
+# STATISTICAL ARBITRAGE (4)
+# =============================================================================
+statistical_arbitrage:
+  PairsTradingStrategy:
+    description: "Pairs trading mean reversion"
+    parameters:
+      lookback_period: [50, 200]
+      entry_threshold: [1.5, 3.0]
+      exit_threshold: [0.5, 1.0]
+      
+  StatisticalArbitrage:
+    description: "Multi-asset stat arb"
+    parameters:
+      assets: [["BTC", "ETH"], ["ETH", "SOL"]]
+      lookback_period: [50, 200]
+      z_score_threshold: [1.5, 3.0]
+      
+  CointegrationStrategy:
+    description: "Cointegration-based trading"
+    parameters:
+      lookback_period: [100, 500]
+      confidence_level: [0.9, 0.99]
+      half_life_threshold: [5, 50]
+      
+  BasketArbitrage:
+    description: "Basket vs individual assets"
+    parameters:
+      basket_assets: [["BTC", "ETH", "SOL"]]
+      lookback_period: [50, 200]
+      deviation_threshold: [0.02, 0.1]
+
+# =============================================================================
+# MACHINE LEARNING ENHANCED (5)
+# =============================================================================
+machine_learning:
+  LinearRegressionStrategy:
+    description: "Linear regression predictions"
+    parameters:
+      lookback_period: [20, 100]
+      prediction_horizon: [1, 10]
+      threshold: [0.01, 0.05]
+      
+  RandomForestStrategy:
+    description: "RF for signal generation"
+    parameters:
+      n_estimators: [50, 200]
+      max_depth: [5, 20]
+      lookback_period: [20, 100]
+      
+  SVMStrategy:
+    description: "Support Vector Machine"
+    parameters:
+      kernel: ["linear", "rbf", "poly"]
+      C: [0.1, 10.0]
+      lookback_period: [20, 100]
+      
+  LSTMStrategy:
+    description: "LSTM neural networks"
+    parameters:
+      sequence_length: [10, 50]
+      hidden_units: [32, 128]
+      epochs: [50, 200]
+      
+  EnsembleMLStrategy:
+    description: "Ensemble of ML models"
+    parameters:
+      models: [["lr", "rf"], ["rf", "svm"], ["lr", "rf", "svm"]]
+      voting: ["hard", "soft"]
+      lookback_period: [20, 100]
+
+# =============================================================================
+# ALTERNATIVE STRATEGIES (5)
+# =============================================================================
+alternative:
+  NewsAnalysisStrategy:
+    description: "News sentiment trading"
+    parameters:
+      sentiment_threshold: [0.1, 0.5]
+      lookback_hours: [1, 24]
+      decay_factor: [0.1, 0.9]
+      
+  SeasonalityStrategy:
+    description: "Calendar/seasonal effects"
+    parameters:
+      seasonal_type: ["monthly", "weekly", "daily"]
+      lookback_years: [1, 5]
+      significance_threshold: [0.05, 0.2]
+      
+  IntermarketAnalysis:
+    description: "Cross-market relationships"
+    parameters:
+      reference_markets: ["stocks", "bonds", "commodities"]
+      correlation_period: [20, 100]
+      threshold: [0.3, 0.8]
+      
+  CycleAnalysis:
+    description: "Market cycle identification"
+    parameters:
+      cycle_length: [10, 100]
+      detrend_method: ["linear", "polynomial"]
+      threshold: [0.02, 0.1]
+      
+  RegimeDetectionStrategy:
+    description: "Market regime switching"
+    parameters:
+      regime_indicators: ["volatility", "trend", "volume"]
+      lookback_period: [20, 100]
+      regime_threshold: [0.3, 0.8]
+
+# =============================================================================
+# GLOBAL SETTINGS
+# =============================================================================
+global_settings:
+  # Risk Management
+  max_position_size: 1.0  # 100% of capital
+  stop_loss_pct: [0.02, 0.1]  # 2-10%
+  take_profit_pct: [0.04, 0.2]  # 4-20%
+  
+  # Position Sizing Methods
+  position_sizing:
+    - "fixed_percent"
+    - "kelly_criterion"
+    - "volatility_based"
+    - "risk_parity"
+  
+  # Commission and Slippage
+  commission: 0.001  # 0.1%
+  slippage_base: 0.0005  # 0.05%
+  slippage_impact: 0.0001  # Additional based on volatility
+  
+  # Validation Requirements
+  min_trades_per_year: 12
+  max_trades_per_year: 300
+  max_win_rate: 0.85  # Penalty above 85%
+  min_sharpe_ratio: 0.5
+  max_drawdown_limit: 0.6  # 60% 

@@ -1,0 +1,204 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Trading API application logs
+  - job_name: trading-api-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: trading-api
+          component: api
+          environment: development
+          __path__: /app/logs/*.log
+
+    pipeline_stages:
+      # Parse JSON logs
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            logger: logger
+            message: message
+            category: category
+            component: component
+            request_id: request_id
+            trace_id: trace_id
+            method: context.method
+            endpoint: context.endpoint
+            status_code: context.status_code
+            duration_ms: context.duration_ms
+            strategy_name: context.strategy_name
+            job_id: context.job_id
+            error_type: context.error_type
+
+      # Parse timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+
+      # Add dynamic labels
+      - labels:
+          level: level
+          category: category
+          component: component
+          logger: logger
+
+      # Add conditional labels for API requests
+      - match:
+          selector: '{category="api"}'
+          stages:
+            - labels:
+                method: method
+                endpoint: endpoint
+                status_code: status_code
+
+      # Add conditional labels for optimization jobs
+      - match:
+          selector: '{category="optimization"}'
+          stages:
+            - labels:
+                strategy_name: strategy_name
+
+      # Add performance metrics as labels
+      - match:
+          selector: '{duration_ms!=""}'
+          stages:
+            - template:
+                source: duration_category
+                template: '{{ if gt .duration_ms 5000 }}slow{{ else if gt .duration_ms 1000 }}medium{{ else }}fast{{ end }}'
+            - labels:
+                duration_category: duration_category
+
+      # Extract error information
+      - match:
+          selector: '{level=~"ERROR|CRITICAL"}'
+          stages:
+            - labels:
+                error_type: error_type
+
+  # Trading API aggregated logs (JSON Lines format)
+  - job_name: trading-api-aggregated
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: trading-api-aggregated
+          component: aggregated
+          environment: development
+          __path__: /app/logs/aggregated.jsonl
+
+    pipeline_stages:
+      # Parse JSON logs
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            category: category
+            component: component
+            message: message
+            request_id: context.request_id
+            trace_id: context.trace_id
+            duration_ms: context.duration_ms
+            status_code: context.status_code
+            strategy_name: context.strategy_name
+
+      # Parse timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+
+      # Add labels
+      - labels:
+          level: level
+          category: category
+          component: component
+
+  # System logs (if available)
+  - job_name: system-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system
+          component: system
+          environment: development
+          __path__: /var/log/*.log
+
+    pipeline_stages:
+      # Basic regex parsing for system logs
+      - regex:
+          expression: '^(?P<timestamp>\S+\s+\S+\s+\S+)\s+(?P<hostname>\S+)\s+(?P<process>\S+):\s+(?P<message>.*)'
+
+      # Parse timestamp for system logs
+      - timestamp:
+          source: timestamp
+          format: 'Jan 02 15:04:05'
+
+      # Add labels
+      - labels:
+          hostname: hostname
+          process: process
+
+  # Prometheus logs (if needed)
+  - job_name: prometheus-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: prometheus
+          component: monitoring
+          environment: development
+          __path__: /prometheus/logs/*.log
+
+    pipeline_stages:
+      # Parse Prometheus log format
+      - regex:
+          expression: '^level=(?P<level>\S+)\s+ts=(?P<timestamp>\S+)\s+caller=(?P<caller>\S+)\s+msg="(?P<message>[^"]*)"'
+
+      # Parse timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+
+      # Add labels
+      - labels:
+          level: level
+          caller: caller
+
+  # Grafana logs (if needed)
+  - job_name: grafana-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: grafana
+          component: monitoring
+          environment: development
+          __path__: /grafana/logs/*.log
+
+    pipeline_stages:
+      # Parse Grafana log format
+      - regex:
+          expression: '^t=(?P<timestamp>\S+)\s+lvl=(?P<level>\S+)\s+msg="(?P<message>[^"]*)"'
+
+      # Parse timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+
+      # Add labels
+      - labels:
+          level: level
+
+# Target configuration
+target_config:
+  sync_period: 10s 

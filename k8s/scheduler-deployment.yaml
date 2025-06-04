@@ -1,0 +1,384 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-scheduler
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+    environment: production
+spec:
+  replicas: 1  # Scheduler should be singleton
+  strategy:
+    type: Recreate  # Ensure only one scheduler instance at a time
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: scheduler
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: scheduler
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9092"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: hyperopt-scheduler
+      containers:
+      - name: scheduler
+        image: ghcr.io/hyperopt/hyperopt-platform-scheduler:latest
+        env:
+        - name: SCHEDULER_TYPE
+          value: "celery-beat"
+        - name: DATABASE_URL
+          value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/$(REDIS_DB)"
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: CELERY_RESULT_BACKEND
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_PORT
+        - name: DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_NAME
+        - name: DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: DATABASE_PASSWORD
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_PORT
+        - name: REDIS_DB
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: REDIS_DB
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: REDIS_PASSWORD
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: SECRET_KEY
+        envFrom:
+        - configMapRef:
+            name: hyperopt-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import celery; app = celery.Celery('scheduler'); print('Scheduler alive')"
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import redis; r = redis.Redis.from_url('$(REDIS_URL)'); r.ping()"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: scheduler-logs
+          mountPath: /app/logs
+        - name: scheduler-data
+          mountPath: /app/schedules
+        - name: shared-data
+          mountPath: /app/data
+      volumes:
+      - name: scheduler-logs
+        emptyDir: {}
+      - name: scheduler-data
+        persistentVolumeClaim:
+          claimName: hyperopt-scheduler-pvc
+      - name: shared-data
+        persistentVolumeClaim:
+          claimName: hyperopt-data-pvc
+      nodeSelector:
+        node-type: general
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperopt-scheduler-service
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+spec:
+  ports:
+  - port: 9092
+    targetPort: 9092
+    name: metrics
+  selector:
+    app: hyperopt-platform
+    component: scheduler
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-scheduler
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hyperopt-scheduler-pvc
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: scheduler-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
+
+---
+# CronJob for Periodic Cleanup Tasks
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hyperopt-cleanup
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: cleanup
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cleanup
+            image: ghcr.io/hyperopt/hyperopt-platform:latest
+            command:
+            - python
+            - /app/scripts/cleanup.py
+            env:
+            - name: DATABASE_URL
+              value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+            - name: REDIS_URL
+              value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/$(REDIS_DB)"
+            envFrom:
+            - configMapRef:
+                name: hyperopt-config
+            - secretRef:
+                name: hyperopt-secrets
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "50m"
+              limits:
+                memory: "512Mi"
+                cpu: "200m"
+            volumeMounts:
+            - name: shared-data
+              mountPath: /app/data
+          volumes:
+          - name: shared-data
+            persistentVolumeClaim:
+              claimName: hyperopt-data-pvc
+          restartPolicy: OnFailure
+      backoffLimit: 3
+
+---
+# CronJob for Database Maintenance
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hyperopt-db-maintenance
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: db-maintenance
+spec:
+  schedule: "0 1 * * 0"  # Weekly on Sunday at 1 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: db-maintenance
+            image: postgres:15
+            command:
+            - /bin/bash
+            - -c
+            - |
+              export PGPASSWORD="$DATABASE_PASSWORD"
+              echo "Running VACUUM ANALYZE..."
+              psql -h $DATABASE_HOST -U $DATABASE_USER -d $DATABASE_NAME -c "VACUUM ANALYZE;"
+              echo "Updating table statistics..."
+              psql -h $DATABASE_HOST -U $DATABASE_USER -d $DATABASE_NAME -c "ANALYZE;"
+              echo "Database maintenance completed."
+            env:
+            - name: DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: hyperopt-config
+                  key: DATABASE_HOST
+            - name: DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: hyperopt-config
+                  key: DATABASE_NAME
+            - name: DATABASE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: hyperopt-config
+                  key: DATABASE_USER
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hyperopt-secrets
+                  key: DATABASE_PASSWORD
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "50m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+          restartPolicy: OnFailure
+      backoffLimit: 2
+
+---
+# Staging Scheduler Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-scheduler-staging
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+    environment: staging
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: scheduler
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: scheduler
+    spec:
+      containers:
+      - name: scheduler
+        image: ghcr.io/hyperopt/hyperopt-platform-scheduler:staging
+        env:
+        - name: SCHEDULER_TYPE
+          value: "celery-beat"
+        - name: DATABASE_URL
+          value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/$(REDIS_DB)"
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: CELERY_RESULT_BACKEND
+        envFrom:
+        - configMapRef:
+            name: hyperopt-config-staging
+        - secretRef:
+            name: hyperopt-secrets-staging
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: scheduler-logs
+          mountPath: /app/logs
+      volumes:
+      - name: scheduler-logs
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperopt-scheduler-service
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+spec:
+  ports:
+  - port: 9092
+    targetPort: 9092
+    name: metrics
+  selector:
+    app: hyperopt-platform
+    component: scheduler
+  type: ClusterIP 

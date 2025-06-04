@@ -1,0 +1,78 @@
+global:
+  # Global configuration for Alertmanager
+  resolve_timeout: 5m
+
+# Routing configuration
+route:
+  # Default route configuration
+  group_by: ['alertname', 'service', 'severity']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'default-webhook'
+
+  # Routing rules
+  routes:
+    # Critical alerts
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 0s
+      repeat_interval: 5m
+
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 30s
+      repeat_interval: 30m
+
+    # Info alerts
+    - match:
+        severity: info
+      receiver: 'info-alerts'
+      group_wait: 5m
+      repeat_interval: 24h
+
+# Alert inhibition rules
+inhibit_rules:
+  # If API is down, don't alert about response times or error rates
+  - source_match:
+      alertname: APIServiceDown
+    target_match_re:
+      alertname: (SlowAPIResponseTime|HighAPIErrorRate|CriticalAPIErrorRate)
+    equal: ['service']
+
+# Notification receivers
+receivers:
+  # Default webhook receiver
+  - name: 'default-webhook'
+    webhook_configs:
+      - url: 'http://host.docker.internal:8000/api/v1/monitoring/webhook/alertmanager'
+        send_resolved: true
+        http_config:
+          bearer_token: 'dev_key_123'
+
+  # Critical alerts
+  - name: 'critical-alerts'
+    webhook_configs:
+      - url: 'http://host.docker.internal:8000/api/v1/monitoring/webhook/alertmanager'
+        send_resolved: true
+        http_config:
+          bearer_token: 'dev_key_123'
+
+  # Warning alerts
+  - name: 'warning-alerts'
+    webhook_configs:
+      - url: 'http://host.docker.internal:8000/api/v1/monitoring/webhook/alertmanager'
+        send_resolved: true
+        http_config:
+          bearer_token: 'dev_key_123'
+
+  # Info alerts
+  - name: 'info-alerts'
+    webhook_configs:
+      - url: 'http://host.docker.internal:8000/api/v1/monitoring/webhook/alertmanager'
+        send_resolved: true
+        http_config:
+          bearer_token: 'dev_key_123' 

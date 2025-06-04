@@ -1,0 +1,88 @@
+# Core Dependencies for Trading Strategy Optimization System
+ccxt>=4.0.0                    # Exchange connectivity
+pandas>=1.5.0,<2.3.0           # Data manipulation (Python 3.9 compatible)
+numpy>=1.24.0,<2.1.0           # Numerical computing
+hyperopt>=0.2.7                # Hyperparameter optimization
+ta>=0.10.0                     # Technical analysis indicators
+plotly>=5.15.0                 # Interactive visualizations
+scikit-learn>=1.3.0,<1.6.0     # Machine learning (Python 3.9 compatible)
+scipy>=1.10.0                  # Statistical functions
+pyyaml>=6.0                    # Configuration management
+requests>=2.31.0               # HTTP requests
+python-dotenv>=1.0.0           # Environment variables
+
+# Additional Technical Analysis
+# Note: TA-Lib requires manual installation on some systems
+# Install with: pip install TA-Lib or use conda: conda install -c conda-forge ta-lib
+yfinance>=0.2.0                # Yahoo Finance data (backup)
+mplfinance>=0.12.10b0          # Financial plotting (beta version for Python 3.9)
+
+# Machine Learning & Statistics
+tensorflow>=2.13.0,<2.16.0     # Deep learning for LSTM strategies (Python 3.9 compatible)
+statsmodels>=0.14.0            # Statistical modeling
+arch>=5.3.0                    # GARCH volatility models
+
+# Data Processing & Storage
+h5py>=3.9.0                    # HDF5 for data storage
+joblib>=1.3.0                  # Parallel processing
+
+# Visualization & Reporting
+matplotlib>=3.7.0              # Basic plotting
+seaborn>=0.12.0                # Statistical visualization
+reportlab>=4.0.0               # PDF report generation
+jinja2>=3.1.0                  # Template engine for reports
+
+# API & Web Framework
+fastapi>=0.100.0               # REST API framework
+uvicorn>=0.23.0                # ASGI server
+pydantic>=2.0.0                # Data validation
+
+# Development & Testing
+pytest>=7.4.0                  # Testing framework
+pytest-cov>=4.1.0             # Coverage testing
+black>=23.7.0                  # Code formatting
+flake8>=6.0.0                  # Linting
+mypy>=1.5.0                    # Type checking
+
+# Utilities
+tqdm>=4.65.0                   # Progress bars
+colorama>=0.4.6                # Colored terminal output
+click>=8.1.0                   # CLI framework
+rich>=13.5.0                   # Rich text and beautiful formatting
+
+# Core API dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Authentication and Security
+redis==5.0.1
+
+# Data Processing
+pandas==2.1.3
+numpy==1.25.2
+scipy==1.11.4
+scikit-learn==1.3.2
+
+# AI Models
+anthropic==0.7.8
+openai==1.3.6
+
+# Optimization
+hyperopt==0.2.7
+
+# Export and Reporting
+reportlab==4.0.7
+matplotlib==3.8.2
+jinja2==3.1.2
+
+# Monitoring and Observability
+prometheus-client==0.19.0
+psutil==5.9.6
+grafana-api==1.0.3
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2 

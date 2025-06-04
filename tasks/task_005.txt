@@ -1,0 +1,61 @@
+# Task ID: 5
+# Title: Implement Core Trading Strategies
+# Status: done
+# Dependencies: 3, 4
+# Priority: high
+# Description: Develop the first set of trading strategies including trend following, mean reversion, and momentum strategies.
+# Details:
+1. Implement the following strategies:
+   - Moving Average Crossover (SMA, EMA)
+   - MACD
+   - RSI mean reversion
+   - Bollinger Bands
+   - Momentum (Rate of Change)
+2. Use the 'ta' library for technical indicators
+3. Define parameter spaces for each strategy using hyperopt distributions
+4. Ensure each strategy inherits from BaseStrategy
+5. Implement entry/exit logic and position sizing for each strategy
+
+# Test Strategy:
+1. Unit tests for each strategy class
+2. Backtesting tests with historical data
+3. Verify correct calculation of indicators
+4. Test edge cases like flat markets and trend reversals
+
+# Subtasks:
+## 5.1. MovingAverageCrossoverStrategy Implementation [completed]
+### Dependencies: None
+### Description: Implemented MovingAverageCrossoverStrategy supporting SMA, EMA, WMA, TEMA with configurable periods and signal thresholds
+### Details:
+
+
+## 5.2. MACDStrategy Implementation [completed]
+### Dependencies: None
+### Description: Implemented MACDStrategy with MACD line crossovers, histogram analysis and momentum confirmation
+### Details:
+
+
+## 5.3. RSIStrategy Implementation [completed]
+### Dependencies: None
+### Description: Implemented RSIStrategy for overbought/oversold conditions with multiple exit strategies (opposite, middle, trailing)
+### Details:
+
+
+## 5.4. BollingerBandsStrategy Implementation [completed]
+### Dependencies: None
+### Description: Implemented BollingerBandsStrategy for both breakout and mean reversion trading with squeeze detection
+### Details:
+
+
+## 5.5. MomentumStrategy Implementation [completed]
+### Dependencies: None
+### Description: Implemented MomentumStrategy using Rate of Change (ROC) based momentum trading with trend confirmation
+### Details:
+
+
+## 5.6. Strategy Testing Suite [completed]
+### Dependencies: None
+### Description: Created comprehensive test suite for all core strategies, including individual strategy tests, combinations, real data integration, and edge cases
+### Details:
+
+

@@ -1,0 +1,237 @@
+groups:
+  - name: trading_api_alerts
+    rules:
+      # API Performance Alerts
+      - alert: HighAPIErrorRate
+        expr: rate(api_requests_total{status_code!~"2.."}[5m]) / rate(api_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: trading-api
+          category: performance
+        annotations:
+          summary: "High API error rate detected"
+          description: "API error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/high-error-rate"
+
+      - alert: CriticalAPIErrorRate
+        expr: rate(api_requests_total{status_code!~"2.."}[5m]) / rate(api_requests_total[5m]) > 0.15
+        for: 1m
+        labels:
+          severity: critical
+          service: trading-api
+          category: performance
+        annotations:
+          summary: "Critical API error rate detected"
+          description: "API error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/critical-error-rate"
+
+      - alert: SlowAPIResponseTime
+        expr: histogram_quantile(0.95, api_request_duration_seconds_bucket) > 2.0
+        for: 3m
+        labels:
+          severity: warning
+          service: trading-api
+          category: performance
+        annotations:
+          summary: "API response time is slow"
+          description: "95th percentile response time is {{ $value }}s over the last 5 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/slow-response"
+
+      - alert: APIServiceDown
+        expr: up{job="trading-api"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: trading-api
+          category: availability
+        annotations:
+          summary: "Trading API service is down"
+          description: "The Trading Strategy Optimization API is unreachable"
+          runbook_url: "https://docs.trading-api.com/runbooks/service-down"
+
+      # System Resource Alerts
+      - alert: HighCPUUsage
+        expr: system_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: trading-api
+          category: resources
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% for more than 5 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/high-cpu"
+
+      - alert: CriticalCPUUsage
+        expr: system_cpu_usage_percent > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: trading-api
+          category: resources
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is {{ $value }}% for more than 2 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/critical-cpu"
+
+      - alert: HighMemoryUsage
+        expr: system_memory_usage_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: trading-api
+          category: resources
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% for more than 5 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/high-memory"
+
+      - alert: CriticalMemoryUsage
+        expr: system_memory_usage_percent > 95
+        for: 1m
+        labels:
+          severity: critical
+          service: trading-api
+          category: resources
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is {{ $value }}% for more than 1 minute"
+          runbook_url: "https://docs.trading-api.com/runbooks/critical-memory"
+
+      - alert: LowDiskSpace
+        expr: (system_disk_usage_bytes / system_disk_total_bytes) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          service: trading-api
+          category: resources
+        annotations:
+          summary: "Low disk space detected"
+          description: "Disk usage is {{ $value }}% for more than 10 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/low-disk"
+
+      - alert: CriticalDiskSpace
+        expr: (system_disk_usage_bytes / system_disk_total_bytes) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          service: trading-api
+          category: resources
+        annotations:
+          summary: "Critical disk space detected"
+          description: "Disk usage is {{ $value }}% for more than 5 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/critical-disk"
+
+      # Optimization Job Alerts
+      - alert: OptimizationJobsStuck
+        expr: optimization_queue_size > 10 and rate(optimization_jobs_completed_total[10m]) == 0
+        for: 15m
+        labels:
+          severity: warning
+          service: trading-api
+          category: jobs
+        annotations:
+          summary: "Optimization jobs appear to be stuck"
+          description: "{{ $value }} jobs in queue with no completions in 10 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/stuck-jobs"
+
+      - alert: HighOptimizationFailureRate
+        expr: rate(optimization_jobs_failed_total[10m]) / rate(optimization_jobs_completed_total[10m]) > 0.20
+        for: 5m
+        labels:
+          severity: warning
+          service: trading-api
+          category: jobs
+        annotations:
+          summary: "High optimization job failure rate"
+          description: "{{ $value | humanizePercentage }} of optimization jobs are failing"
+          runbook_url: "https://docs.trading-api.com/runbooks/job-failures"
+
+      - alert: CriticalOptimizationFailureRate
+        expr: rate(optimization_jobs_failed_total[10m]) / rate(optimization_jobs_completed_total[10m]) > 0.50
+        for: 2m
+        labels:
+          severity: critical
+          service: trading-api
+          category: jobs
+        annotations:
+          summary: "Critical optimization job failure rate"
+          description: "{{ $value | humanizePercentage }} of optimization jobs are failing"
+          runbook_url: "https://docs.trading-api.com/runbooks/critical-job-failures"
+
+      - alert: LongRunningOptimizationJobs
+        expr: optimization_job_duration_seconds > 3600
+        for: 0s
+        labels:
+          severity: info
+          service: trading-api
+          category: jobs
+        annotations:
+          summary: "Long-running optimization job detected"
+          description: "Optimization job has been running for {{ $value | humanizeDuration }}"
+          runbook_url: "https://docs.trading-api.com/runbooks/long-jobs"
+
+      # Export Operation Alerts
+      - alert: ExportOperationFailures
+        expr: rate(export_operations_failed_total[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: trading-api
+          category: exports
+        annotations:
+          summary: "Export operation failures detected"
+          description: "{{ $value }} export operations per minute are failing"
+          runbook_url: "https://docs.trading-api.com/runbooks/export-failures"
+
+      # Business Logic Alerts
+      - alert: NoAPIActivity
+        expr: rate(api_requests_total[10m]) == 0
+        for: 30m
+        labels:
+          severity: info
+          service: trading-api
+          category: business
+        annotations:
+          summary: "No API activity detected"
+          description: "No API requests received in the last 30 minutes"
+          runbook_url: "https://docs.trading-api.com/runbooks/no-activity"
+
+      - alert: UnusualTrafficSpike
+        expr: rate(api_requests_total[5m]) > 10 * rate(api_requests_total[1h] offset 1h)
+        for: 5m
+        labels:
+          severity: warning
+          service: trading-api
+          category: business
+        annotations:
+          summary: "Unusual traffic spike detected"
+          description: "Current request rate is {{ $value }}x higher than usual"
+          runbook_url: "https://docs.trading-api.com/runbooks/traffic-spike"
+
+      # Health Check Alerts
+      - alert: ComponentHealthCheck
+        expr: health_check_status{component!="overall"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: trading-api
+          category: health
+        annotations:
+          summary: "Component health check failed"
+          description: "Component {{ $labels.component }} health check is failing"
+          runbook_url: "https://docs.trading-api.com/runbooks/component-health"
+
+  - name: trading_api_deadman
+    rules:
+      # Deadman switch - ensures alerting is working
+      - alert: DeadManSwitch
+        expr: vector(1)
+        labels:
+          severity: info
+          service: trading-api
+          category: meta
+        annotations:
+          summary: "Alerting system is operational"
+          description: "This alert is always firing to ensure the alerting system is working" 

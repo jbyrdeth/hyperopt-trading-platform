@@ -1,0 +1,406 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-api
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: api
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-worker
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: worker
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-scheduler
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-monitoring
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: monitoring
+
+---
+# Role for API Service
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-production
+  name: hyperopt-api-role
+  labels:
+    app: hyperopt-platform
+    component: api
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+---
+# Role for Worker Service
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-production
+  name: hyperopt-worker-role
+  labels:
+    app: hyperopt-platform
+    component: worker
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "get", "list", "watch", "update", "patch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+---
+# Role for Scheduler Service
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-production
+  name: hyperopt-scheduler-role
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+---
+# Role for Monitoring
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-production
+  name: hyperopt-monitoring-role
+  labels:
+    app: hyperopt-platform
+    component: monitoring
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "endpoints", "nodes"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "statefulsets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]
+
+---
+# Cluster Role for Monitoring (needs cluster-wide access)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hyperopt-monitoring-cluster-role
+  labels:
+    app: hyperopt-platform
+    component: monitoring
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "nodes/metrics", "services", "endpoints", "pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes", "pods"]
+  verbs: ["get", "list"]
+
+---
+# Role Bindings
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-api-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: api
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-api
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: hyperopt-api-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-worker-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: worker
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-worker
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: hyperopt-worker-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-scheduler-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-scheduler
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: hyperopt-scheduler-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-monitoring-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: monitoring
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-monitoring
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: hyperopt-monitoring-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hyperopt-monitoring-cluster-binding
+  labels:
+    app: hyperopt-platform
+    component: monitoring
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-monitoring
+  namespace: hyperopt-production
+roleRef:
+  kind: ClusterRole
+  name: hyperopt-monitoring-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Pod Security Policy (if enabled in cluster)
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: hyperopt-psp
+  labels:
+    app: hyperopt-platform
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+
+---
+# Role for Pod Security Policy
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: hyperopt-psp-role
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs: ['use']
+  resourceNames:
+  - hyperopt-psp
+
+---
+# Role Bindings for Pod Security Policy
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-api-psp-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: api
+roleRef:
+  kind: Role
+  name: hyperopt-psp-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-api
+  namespace: hyperopt-production
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-worker-psp-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: worker
+roleRef:
+  kind: Role
+  name: hyperopt-psp-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-worker
+  namespace: hyperopt-production
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-scheduler-psp-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: scheduler
+roleRef:
+  kind: Role
+  name: hyperopt-psp-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-scheduler
+  namespace: hyperopt-production
+
+---
+# Staging RBAC (Simplified)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperopt-staging
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    environment: staging
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-staging
+  name: hyperopt-staging-role
+  labels:
+    app: hyperopt-platform
+    environment: staging
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperopt-staging-binding
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    environment: staging
+subjects:
+- kind: ServiceAccount
+  name: hyperopt-staging
+  namespace: hyperopt-staging
+roleRef:
+  kind: Role
+  name: hyperopt-staging-role
+  apiGroup: rbac.authorization.k8s.io 

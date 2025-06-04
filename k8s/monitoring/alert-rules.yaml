@@ -1,0 +1,507 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alert-rules
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: prometheus-rules
+data:
+  hyperopt-alerts.yml: |
+    groups:
+      - name: hyperopt.optimization.alerts
+        rules:
+          # High Optimization Failure Rate
+          - alert: HighOptimizationFailureRate
+            expr: (rate(hyperopt_optimizations_failed_total[5m]) / rate(hyperopt_optimizations_total[5m])) * 100 > 20
+            for: 5m
+            labels:
+              severity: warning
+              service: optimization
+            annotations:
+              summary: "High optimization failure rate detected"
+              description: "Optimization failure rate is {{ $value }}% over the last 5 minutes, which is above the 20% threshold."
+              runbook_url: "https://docs.hyperopt.company/runbooks/optimization-failures"
+
+          # Critical Optimization Failure Rate
+          - alert: CriticalOptimizationFailureRate
+            expr: (rate(hyperopt_optimizations_failed_total[5m]) / rate(hyperopt_optimizations_total[5m])) * 100 > 50
+            for: 2m
+            labels:
+              severity: critical
+              service: optimization
+            annotations:
+              summary: "Critical optimization failure rate detected"
+              description: "Optimization failure rate is {{ $value }}% over the last 5 minutes, which is critically high (>50%)."
+              runbook_url: "https://docs.hyperopt.company/runbooks/critical-optimization-failures"
+
+          # Long Running Optimizations
+          - alert: LongRunningOptimizations
+            expr: hyperopt:optimization_duration_p95 > 1800  # 30 minutes
+            for: 10m
+            labels:
+              severity: warning
+              service: optimization
+            annotations:
+              summary: "Optimizations taking too long to complete"
+              description: "95th percentile optimization duration is {{ $value }} seconds, exceeding 30 minutes."
+              runbook_url: "https://docs.hyperopt.company/runbooks/long-running-optimizations"
+
+          # No Active Workers
+          - alert: NoActiveWorkers
+            expr: hyperopt:active_workers == 0
+            for: 2m
+            labels:
+              severity: critical
+              service: workers
+            annotations:
+              summary: "No active optimization workers"
+              description: "All optimization workers are down. No optimizations can be processed."
+              runbook_url: "https://docs.hyperopt.company/runbooks/worker-downtime"
+
+          # Low Worker Count
+          - alert: LowWorkerCount
+            expr: hyperopt:active_workers < 2
+            for: 5m
+            labels:
+              severity: warning
+              service: workers
+            annotations:
+              summary: "Low number of active workers"
+              description: "Only {{ $value }} workers are active, which may cause optimization delays."
+              runbook_url: "https://docs.hyperopt.company/runbooks/low-worker-count"
+
+          # High Queue Length
+          - alert: HighQueueLength
+            expr: hyperopt:queue_length > 100
+            for: 5m
+            labels:
+              severity: warning
+              service: queue
+            annotations:
+              summary: "High optimization queue length"
+              description: "Queue length is {{ $value }}, indicating potential processing delays."
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-queue-length"
+
+          # Critical Queue Length
+          - alert: CriticalQueueLength
+            expr: hyperopt:queue_length > 500
+            for: 2m
+            labels:
+              severity: critical
+              service: queue
+            annotations:
+              summary: "Critical optimization queue length"
+              description: "Queue length is {{ $value }}, indicating severe processing delays."
+              runbook_url: "https://docs.hyperopt.company/runbooks/critical-queue-length"
+
+          # Low Optimization Rate
+          - alert: LowOptimizationRate
+            expr: hyperopt:optimization_rate_5m < 0.1
+            for: 10m
+            labels:
+              severity: warning
+              service: optimization
+            annotations:
+              summary: "Low optimization processing rate"
+              description: "Optimization rate is {{ $value }} optimizations/sec, below expected threshold."
+              runbook_url: "https://docs.hyperopt.company/runbooks/low-optimization-rate"
+
+      - name: hyperopt.infrastructure.alerts
+        rules:
+          # High CPU Usage
+          - alert: HighCPUUsage
+            expr: hyperopt:cpu_utilization > 80
+            for: 5m
+            labels:
+              severity: warning
+              service: infrastructure
+            annotations:
+              summary: "High CPU usage detected"
+              description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-cpu-usage"
+
+          # Critical CPU Usage
+          - alert: CriticalCPUUsage
+            expr: hyperopt:cpu_utilization > 95
+            for: 2m
+            labels:
+              severity: critical
+              service: infrastructure
+            annotations:
+              summary: "Critical CPU usage detected"
+              description: "CPU usage is {{ $value }}% on {{ $labels.instance }}, system may become unresponsive"
+              runbook_url: "https://docs.hyperopt.company/runbooks/critical-cpu-usage"
+
+          # High Memory Usage
+          - alert: HighMemoryUsage
+            expr: hyperopt:memory_utilization > 85
+            for: 5m
+            labels:
+              severity: warning
+              service: infrastructure
+            annotations:
+              summary: "High memory usage detected"
+              description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-memory-usage"
+
+          # Critical Memory Usage
+          - alert: CriticalMemoryUsage
+            expr: hyperopt:memory_utilization > 95
+            for: 2m
+            labels:
+              severity: critical
+              service: infrastructure
+            annotations:
+              summary: "Critical memory usage detected"
+              description: "Memory usage is {{ $value }}% on {{ $labels.instance }}, OOM kill likely"
+              runbook_url: "https://docs.hyperopt.company/runbooks/critical-memory-usage"
+
+          # High Disk Usage
+          - alert: HighDiskUsage
+            expr: hyperopt:disk_utilization > 80
+            for: 5m
+            labels:
+              severity: warning
+              service: infrastructure
+            annotations:
+              summary: "High disk usage detected"
+              description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-disk-usage"
+
+          # Critical Disk Usage
+          - alert: CriticalDiskUsage
+            expr: hyperopt:disk_utilization > 90
+            for: 2m
+            labels:
+              severity: critical
+              service: infrastructure
+            annotations:
+              summary: "Critical disk usage detected"
+              description: "Disk usage is {{ $value }}% on {{ $labels.instance }}, risk of disk full"
+              runbook_url: "https://docs.hyperopt.company/runbooks/critical-disk-usage"
+
+      - name: hyperopt.api.alerts
+        rules:
+          # High API Response Time
+          - alert: HighAPIResponseTime
+            expr: hyperopt:api_response_time_p95 > 2
+            for: 5m
+            labels:
+              severity: warning
+              service: api
+            annotations:
+              summary: "High API response time"
+              description: "95th percentile API response time is {{ $value }} seconds"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-api-response-time"
+
+          # Critical API Response Time
+          - alert: CriticalAPIResponseTime
+            expr: hyperopt:api_response_time_p95 > 10
+            for: 2m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "Critical API response time"
+              description: "95th percentile API response time is {{ $value }} seconds, API may be unresponsive"
+              runbook_url: "https://docs.hyperopt.company/runbooks/critical-api-response-time"
+
+          # High API Error Rate
+          - alert: HighAPIErrorRate
+            expr: hyperopt:api_error_rate * 100 > 5
+            for: 5m
+            labels:
+              severity: warning
+              service: api
+            annotations:
+              summary: "High API error rate"
+              description: "API error rate is {{ $value }}%, above 5% threshold"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-api-error-rate"
+
+          # Critical API Error Rate
+          - alert: CriticalAPIErrorRate
+            expr: hyperopt:api_error_rate * 100 > 20
+            for: 2m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "Critical API error rate"
+              description: "API error rate is {{ $value }}%, above 20% threshold, API may be failing"
+              runbook_url: "https://docs.hyperopt.company/runbooks/critical-api-error-rate"
+
+          # API Service Down
+          - alert: APIServiceDown
+            expr: up{job="hyperopt-api"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "API service is down"
+              description: "HyperOpt API service is not responding on {{ $labels.instance }}"
+              runbook_url: "https://docs.hyperopt.company/runbooks/api-service-down"
+
+      - name: hyperopt.database.alerts
+        rules:
+          # Database Connection Failures
+          - alert: DatabaseConnectionFailures
+            expr: rate(postgresql_up[5m]) < 1
+            for: 2m
+            labels:
+              severity: critical
+              service: database
+            annotations:
+              summary: "Database connection failures"
+              description: "PostgreSQL database is not accessible"
+              runbook_url: "https://docs.hyperopt.company/runbooks/database-connection-failures"
+
+          # High Database Connections
+          - alert: HighDatabaseConnections
+            expr: postgresql_stat_database_numbackends > 80
+            for: 5m
+            labels:
+              severity: warning
+              service: database
+            annotations:
+              summary: "High number of database connections"
+              description: "Database has {{ $value }} active connections, approaching connection limit"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-database-connections"
+
+          # Slow Database Queries
+          - alert: SlowDatabaseQueries
+            expr: rate(postgresql_slow_queries_total[5m]) > 10
+            for: 5m
+            labels:
+              severity: warning
+              service: database
+            annotations:
+              summary: "High rate of slow database queries"
+              description: "Database is experiencing {{ $value }} slow queries per second"
+              runbook_url: "https://docs.hyperopt.company/runbooks/slow-database-queries"
+
+          # Database Replication Lag
+          - alert: DatabaseReplicationLag
+            expr: postgresql_replication_lag_seconds > 300  # 5 minutes
+            for: 5m
+            labels:
+              severity: warning
+              service: database
+            annotations:
+              summary: "High database replication lag"
+              description: "Database replication lag is {{ $value }} seconds"
+              runbook_url: "https://docs.hyperopt.company/runbooks/database-replication-lag"
+
+      - name: hyperopt.redis.alerts
+        rules:
+          # Redis Service Down
+          - alert: RedisServiceDown
+            expr: up{job="redis-exporter"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              service: redis
+            annotations:
+              summary: "Redis service is down"
+              description: "Redis cache service is not responding"
+              runbook_url: "https://docs.hyperopt.company/runbooks/redis-service-down"
+
+          # High Redis Memory Usage
+          - alert: HighRedisMemoryUsage
+            expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 80
+            for: 5m
+            labels:
+              severity: warning
+              service: redis
+            annotations:
+              summary: "High Redis memory usage"
+              description: "Redis memory usage is {{ $value }}%"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-redis-memory-usage"
+
+          # Redis Key Evictions
+          - alert: RedisKeyEvictions
+            expr: rate(redis_evicted_keys_total[5m]) > 100
+            for: 5m
+            labels:
+              severity: warning
+              service: redis
+            annotations:
+              summary: "High Redis key eviction rate"
+              description: "Redis is evicting {{ $value }} keys per second"
+              runbook_url: "https://docs.hyperopt.company/runbooks/redis-key-evictions"
+
+      - name: hyperopt.business.alerts
+        rules:
+          # Low Success Rate for Premium Strategies
+          - alert: LowPremiumStrategySuccessRate
+            expr: |
+              (
+                sum(rate(hyperopt_optimizations_successful_total{strategy_tier="premium"}[1h])) /
+                sum(rate(hyperopt_optimizations_total{strategy_tier="premium"}[1h]))
+              ) * 100 < 85
+            for: 15m
+            labels:
+              severity: warning
+              service: business
+            annotations:
+              summary: "Low success rate for premium strategies"
+              description: "Premium strategy success rate is {{ $value }}%, below 85% SLA"
+              runbook_url: "https://docs.hyperopt.company/runbooks/low-premium-strategy-success"
+
+          # Unusual Strategy Performance Variance
+          - alert: HighStrategyPerformanceVariance
+            expr: |
+              (
+                stddev_over_time(hyperopt_strategy_roi_percentage[6h]) /
+                avg_over_time(hyperopt_strategy_roi_percentage[6h])
+              ) > 0.5
+            for: 30m
+            labels:
+              severity: warning
+              service: business
+            annotations:
+              summary: "High variance in strategy performance"
+              description: "Strategy performance variance is unusually high, coefficient of variation: {{ $value }}"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-strategy-variance"
+
+          # Zero Revenue Generating Optimizations
+          - alert: ZeroRevenueOptimizations
+            expr: sum(increase(hyperopt_optimizations_revenue_generating[1h])) == 0
+            for: 2h
+            labels:
+              severity: critical
+              service: business
+            annotations:
+              summary: "No revenue-generating optimizations in the last hour"
+              description: "No optimizations have generated revenue in the past hour, check billing and premium features"
+              runbook_url: "https://docs.hyperopt.company/runbooks/zero-revenue-optimizations"
+
+      - name: hyperopt.security.alerts
+        rules:
+          # Unusual API Request Pattern
+          - alert: UnusualAPIRequestPattern
+            expr: rate(http_requests_total{job="hyperopt-api"}[5m]) > 1000
+            for: 5m
+            labels:
+              severity: warning
+              service: security
+            annotations:
+              summary: "Unusual API request pattern detected"
+              description: "API is receiving {{ $value }} requests per second, possible DDoS or abuse"
+              runbook_url: "https://docs.hyperopt.company/runbooks/unusual-api-requests"
+
+          # Failed Authentication Attempts
+          - alert: HighFailedAuthAttempts
+            expr: rate(hyperopt_auth_failures_total[5m]) > 10
+            for: 5m
+            labels:
+              severity: warning
+              service: security
+            annotations:
+              summary: "High rate of failed authentication attempts"
+              description: "{{ $value }} failed authentication attempts per second"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-failed-auth-attempts"
+
+          # Suspicious User Activity
+          - alert: SuspiciousUserActivity
+            expr: rate(hyperopt_user_actions_total{action="delete"}[5m]) > 5
+            for: 5m
+            labels:
+              severity: warning
+              service: security
+            annotations:
+              summary: "Suspicious user activity detected"
+              description: "High rate of delete operations: {{ $value }} per second"
+              runbook_url: "https://docs.hyperopt.company/runbooks/suspicious-user-activity"
+
+  infrastructure-alerts.yml: |
+    groups:
+      - name: kubernetes.alerts
+        rules:
+          # Pod Crash Looping
+          - alert: PodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+            for: 5m
+            labels:
+              severity: warning
+              service: kubernetes
+            annotations:
+              summary: "Pod is crash looping"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is crash looping"
+              runbook_url: "https://docs.hyperopt.company/runbooks/pod-crash-looping"
+
+          # Pod Not Ready
+          - alert: PodNotReady
+            expr: kube_pod_status_ready{condition="false"} > 0
+            for: 5m
+            labels:
+              severity: warning
+              service: kubernetes
+            annotations:
+              summary: "Pod is not ready"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is not ready"
+              runbook_url: "https://docs.hyperopt.company/runbooks/pod-not-ready"
+
+          # Deployment Rollout Stuck
+          - alert: DeploymentRolloutStuck
+            expr: |
+              kube_deployment_status_replicas_available != kube_deployment_spec_replicas
+              and
+              changes(kube_deployment_status_replicas_updated[10m]) == 0
+            for: 10m
+            labels:
+              severity: warning
+              service: kubernetes
+            annotations:
+              summary: "Deployment rollout is stuck"
+              description: "Deployment {{ $labels.deployment }} rollout is stuck with {{ $value }} unavailable replicas"
+              runbook_url: "https://docs.hyperopt.company/runbooks/deployment-rollout-stuck"
+
+          # Node Not Ready
+          - alert: NodeNotReady
+            expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+            for: 2m
+            labels:
+              severity: critical
+              service: kubernetes
+            annotations:
+              summary: "Kubernetes node is not ready"
+              description: "Node {{ $labels.node }} is not ready"
+              runbook_url: "https://docs.hyperopt.company/runbooks/node-not-ready"
+
+          # High Node CPU Usage
+          - alert: HighNodeCPUUsage
+            expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+            for: 5m
+            labels:
+              severity: warning
+              service: kubernetes
+            annotations:
+              summary: "High CPU usage on Kubernetes node"
+              description: "Node {{ $labels.instance }} CPU usage is {{ $value }}%"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-node-cpu-usage"
+
+          # High Node Memory Usage
+          - alert: HighNodeMemoryUsage
+            expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 85
+            for: 5m
+            labels:
+              severity: warning
+              service: kubernetes
+            annotations:
+              summary: "High memory usage on Kubernetes node"
+              description: "Node {{ $labels.instance }} memory usage is {{ $value }}%"
+              runbook_url: "https://docs.hyperopt.company/runbooks/high-node-memory-usage"
+
+          # Persistent Volume Claim Pending
+          - alert: PVCPending
+            expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} > 0
+            for: 5m
+            labels:
+              severity: warning
+              service: kubernetes
+            annotations:
+              summary: "Persistent Volume Claim is pending"
+              description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is pending"
+              runbook_url: "https://docs.hyperopt.company/runbooks/pvc-pending" 

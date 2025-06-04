@@ -1,0 +1,402 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hyperopt-ingress
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: ingress
+    environment: production
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.hyperopt.company,https://admin.hyperopt.company"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET,POST,PUT,DELETE,OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization,Content-Type,X-API-Key"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+  - hosts:
+    - api.hyperopt.company
+    - app.hyperopt.company
+    - admin.hyperopt.company
+    secretName: hyperopt-tls
+  rules:
+  - host: api.hyperopt.company
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hyperopt-api-service
+            port:
+              number: 80
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: hyperopt-api-service
+            port:
+              number: 80
+      - path: /docs
+        pathType: Prefix
+        backend:
+          service:
+            name: hyperopt-api-service
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: hyperopt-api-service
+            port:
+              number: 80
+  - host: app.hyperopt.company
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hyperopt-frontend-service
+            port:
+              number: 80
+  - host: admin.hyperopt.company
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hyperopt-admin-service
+            port:
+              number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hyperopt-monitoring-ingress
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: monitoring-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: monitoring-auth
+    nginx.ingress.kubernetes.io/auth-realm: "HyperOpt Monitoring - Authentication Required"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+  - hosts:
+    - monitoring.hyperopt.company
+    - grafana.hyperopt.company
+    - prometheus.hyperopt.company
+    secretName: hyperopt-monitoring-tls
+  rules:
+  - host: monitoring.hyperopt.company
+    http:
+      paths:
+      - path: /grafana
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
+      - path: /prometheus
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus
+            port:
+              number: 9090
+  - host: grafana.hyperopt.company
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
+  - host: prometheus.hyperopt.company
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus
+            port:
+              number: 9090
+
+---
+# Staging Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hyperopt-staging-ingress
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: ingress
+    environment: staging
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/rate-limit: "500"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://staging.hyperopt.company"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+  - hosts:
+    - staging.hyperopt.company
+    - staging-api.hyperopt.company
+    secretName: hyperopt-staging-tls
+  rules:
+  - host: staging.hyperopt.company
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hyperopt-api-service
+            port:
+              number: 80
+  - host: staging-api.hyperopt.company
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hyperopt-api-service
+            port:
+              number: 80
+
+---
+# Basic Auth Secret for Monitoring Access
+apiVersion: v1
+kind: Secret
+metadata:
+  name: monitoring-auth
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: monitoring
+type: Opaque
+data:
+  auth: YWRtaW46JGFwcjEkSDZ1S2k2UzYkQ3JWQUt2STZEcUFNSnc4L2pjM29jLw==  # admin:monitoring123
+
+---
+# Network Policy for API Access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-api-netpol
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: worker
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: scheduler
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 9090
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to: []  # Allow all outbound for external API calls
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: UDP
+      port: 53
+
+---
+# Network Policy for Worker Access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-worker-netpol
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: worker
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: api
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: scheduler
+    ports:
+    - protocol: TCP
+      port: 9091
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to: []  # Allow all outbound for external API calls
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: UDP
+      port: 53
+
+---
+# Network Policy for Database Access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-postgres-netpol
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: postgres
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: api
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: worker
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: scheduler
+    ports:
+    - protocol: TCP
+      port: 5432
+
+---
+# Network Policy for Redis Access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hyperopt-redis-netpol
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: hyperopt-platform
+      component: redis
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: api
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: worker
+    - podSelector:
+        matchLabels:
+          app: hyperopt-platform
+          component: scheduler
+    ports:
+    - protocol: TCP
+      port: 6379 

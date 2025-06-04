@@ -1,0 +1,90 @@
+# Multi-stage build for HyperOpt Strategy Platform API
+FROM python:3.9-slim as builder
+
+# Set build arguments
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+
+# Add metadata
+LABEL org.opencontainers.image.title="HyperOpt Strategy Platform API"
+LABEL org.opencontainers.image.description="High-performance algorithmic trading strategy optimization API"
+LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.created=$BUILD_DATE
+LABEL org.opencontainers.image.revision=$VCS_REF
+LABEL org.opencontainers.image.vendor="HyperOpt Team"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    python3-dev \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt requirements-production.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements-production.txt
+
+# Copy source code
+COPY src/ ./src/
+COPY config/ ./config/
+COPY scripts/ ./scripts/
+
+# Production stage
+FROM python:3.9-slim as production
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN groupadd -r hyperopt && useradd -r -g hyperopt hyperopt
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /app ./
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/temp && \
+    chown -R hyperopt:hyperopt /app
+
+# Copy startup scripts
+COPY docker/scripts/api-entrypoint.sh /usr/local/bin/
+COPY docker/scripts/healthcheck.py /usr/local/bin/
+RUN chmod +x /usr/local/bin/api-entrypoint.sh
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV ENVIRONMENT=production
+ENV PORT=8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python /usr/local/bin/healthcheck.py
+
+# Switch to non-root user
+USER hyperopt
+
+# Expose port
+EXPOSE 8000
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/api-entrypoint.sh"]
+
+# Default command
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"] 

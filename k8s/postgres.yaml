@@ -1,0 +1,316 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: postgres
+    environment: production
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_NAME
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config
+              key: DATABASE_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: DATABASE_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+        - name: postgres-init
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1 -p 5432
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1 -p 5432
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: postgres-config
+        configMap:
+          name: postgres-config
+      - name: postgres-init
+        configMap:
+          name: postgres-init-scripts
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 50Gi
+      storageClassName: fast-ssd
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: postgres
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  selector:
+    app: hyperopt-platform
+    component: postgres
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: postgres-config
+data:
+  postgresql.conf: |
+    # Performance Configuration
+    shared_buffers = 256MB
+    effective_cache_size = 1GB
+    maintenance_work_mem = 64MB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    work_mem = 4MB
+    min_wal_size = 1GB
+    max_wal_size = 4GB
+    
+    # Connection Configuration
+    max_connections = 200
+    listen_addresses = '*'
+    port = 5432
+    
+    # Logging Configuration
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = 'log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age = 1d
+    log_rotation_size = 100MB
+    log_min_duration_statement = 1000
+    log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    
+    # Security Configuration
+    ssl = off
+    password_encryption = scram-sha-256
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: postgres-init
+data:
+  01-init-database.sql: |
+    -- Create additional databases
+    CREATE DATABASE hyperopt_test;
+    
+    -- Create extensions
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
+    CREATE EXTENSION IF NOT EXISTS "btree_gin";
+    
+    -- Create application schema
+    CREATE SCHEMA IF NOT EXISTS app;
+    CREATE SCHEMA IF NOT EXISTS logs;
+    CREATE SCHEMA IF NOT EXISTS metrics;
+    
+    -- Create application user with limited privileges
+    CREATE USER hyperopt_app WITH PASSWORD 'app_password_change_me';
+    GRANT CONNECT ON DATABASE hyperopt_prod TO hyperopt_app;
+    GRANT USAGE ON SCHEMA app TO hyperopt_app;
+    GRANT CREATE ON SCHEMA app TO hyperopt_app;
+    
+    -- Create read-only user for monitoring
+    CREATE USER hyperopt_readonly WITH PASSWORD 'readonly_password_change_me';
+    GRANT CONNECT ON DATABASE hyperopt_prod TO hyperopt_readonly;
+    GRANT USAGE ON SCHEMA app TO hyperopt_readonly;
+    GRANT SELECT ON ALL TABLES IN SCHEMA app TO hyperopt_readonly;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT SELECT ON TABLES TO hyperopt_readonly;
+
+  02-performance-tuning.sql: |
+    -- Performance optimizations
+    ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';
+    ALTER SYSTEM SET track_activity_query_size = 2048;
+    ALTER SYSTEM SET track_io_timing = on;
+    
+    -- Create indexes for common queries (these would be created by migrations)
+    -- This is just a template for future optimization
+
+---
+# Staging PostgreSQL Configuration
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-staging
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: postgres
+    environment: staging
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: DATABASE_NAME
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: hyperopt-config-staging
+              key: DATABASE_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets-staging
+              key: DATABASE_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1 -p 5432
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1 -p 5432
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi
+      storageClassName: standard
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: postgres
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  selector:
+    app: hyperopt-platform
+    component: postgres
+  type: ClusterIP 

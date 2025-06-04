@@ -1,0 +1,66 @@
+# Task ID: 3
+# Title: Create Base Strategy Class and Backtesting Engine
+# Status: done
+# Dependencies: 2
+# Priority: high
+# Description: Develop a base strategy class and a realistic backtesting engine with commission, slippage, and market impact modeling.
+# Details:
+1. Create an abstract BaseStrategy class with common methods for all strategies
+   - Implement Signal and Position dataclasses for structured data
+   - Add built-in risk management (stop loss, take profit)
+   - Include position tracking and P&L calculation
+   - Implement comprehensive logging and state management
+   - Add parameter validation framework
+2. Implement a backtesting engine using vectorized operations for performance
+   - Create comprehensive performance metrics calculation (30+ metrics)
+   - Implement trade tracking and analysis
+   - Add risk metrics (Sharpe, Sortino, Calmar, VaR, etc.)
+   - Include equity curve and drawdown analysis
+3. Add realistic modeling for:
+   - Commission (configurable, default 0.1%)
+   - Dynamic slippage based on volatility (0.05-1% range)
+   - Market impact (using volatility-based model)
+   - Realistic execution price calculation
+4. Implement position sizing and risk management methods
+5. Create a results object to store backtest performance metrics
+6. Develop an example strategy (Simple Moving Average crossover) to demonstrate proper inheritance
+
+# Test Strategy:
+1. Unit tests for BaseStrategy class methods
+2. Integration tests for backtesting engine with simple strategies
+3. Verify correct calculation of costs and slippage
+4. Test edge cases like zero volume periods and extreme price movements
+5. Validate with both synthetic and real market data
+6. Test integration with data fetcher using real BTC data from KuCoin
+
+# Subtasks:
+## 3.1. Implement Abstract BaseStrategy Class [completed]
+### Dependencies: None
+### Description: Created abstract BaseStrategy class in src/strategies/base_strategy.py with all required methods, Signal and Position dataclasses, risk management, position tracking, logging, and parameter validation.
+### Details:
+
+
+## 3.2. Develop Comprehensive Backtesting Engine [completed]
+### Dependencies: None
+### Description: Implemented backtesting engine in src/strategies/backtesting_engine.py with vectorized operations, 30+ performance metrics, trade tracking, risk metrics, and equity curve analysis.
+### Details:
+
+
+## 3.3. Implement Cost Models [completed]
+### Dependencies: None
+### Description: Added configurable commission rates, dynamic slippage based on volatility, market impact modeling, and realistic execution price calculation.
+### Details:
+
+
+## 3.4. Create Example Strategy [completed]
+### Dependencies: None
+### Description: Implemented Simple Moving Average crossover strategy in src/strategies/simple_ma_strategy.py demonstrating proper inheritance from BaseStrategy, parameter validation, indicator calculation, and signal generation.
+### Details:
+
+
+## 3.5. Develop Comprehensive Test Suite [completed]
+### Dependencies: None
+### Description: Created test_strategy_framework.py with tests for all components, validation with synthetic and real market data, edge case testing, and integration with data fetcher.
+### Details:
+
+

@@ -1,0 +1,590 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app: hyperopt-platform
+    component: ssl
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ssl@hyperopt.company
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    - dns01:
+        cloudflare:
+          email: ssl@hyperopt.company
+          apiTokenSecretRef:
+            name: cloudflare-api-token
+            key: api-token
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    app: hyperopt-platform
+    component: ssl
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: ssl@hyperopt.company
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    - dns01:
+        cloudflare:
+          email: ssl@hyperopt.company
+          apiTokenSecretRef:
+            name: cloudflare-api-token
+            key: api-token
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-api-token
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: ssl
+type: Opaque
+data:
+  api-token: ${BASE64_CLOUDFLARE_API_TOKEN}
+
+---
+# Certificate for main domains
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hyperopt-tls
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: ssl
+spec:
+  secretName: hyperopt-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - hyperopt.company
+  - www.hyperopt.company
+  - api.hyperopt.company
+  - app.hyperopt.company
+  - admin.hyperopt.company
+  - auth.hyperopt.company
+
+---
+# Certificate for monitoring domains
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hyperopt-monitoring-tls
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: ssl
+spec:
+  secretName: hyperopt-monitoring-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - monitoring.hyperopt.company
+  - grafana.hyperopt.company
+  - prometheus.hyperopt.company
+  - logs.hyperopt.company
+
+---
+# Certificate for staging
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hyperopt-staging-tls
+  namespace: hyperopt-staging
+  labels:
+    app: hyperopt-platform
+    component: ssl
+    environment: staging
+spec:
+  secretName: hyperopt-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  dnsNames:
+  - staging.hyperopt.company
+  - staging-api.hyperopt.company
+
+---
+# Internal CA for service-to-service communication
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: hyperopt-internal-ca
+  labels:
+    app: hyperopt-platform
+    component: ssl
+spec:
+  ca:
+    secretName: hyperopt-internal-ca-secret
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hyperopt-internal-ca-secret
+  namespace: cert-manager
+  labels:
+    app: hyperopt-platform
+    component: ssl
+type: kubernetes.io/tls
+data:
+  tls.crt: ${BASE64_INTERNAL_CA_CERT}
+  tls.key: ${BASE64_INTERNAL_CA_KEY}
+
+---
+# Internal certificates for services
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hyperopt-postgres-tls
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: ssl
+spec:
+  secretName: hyperopt-postgres-tls
+  issuerRef:
+    name: hyperopt-internal-ca
+    kind: ClusterIssuer
+  dnsNames:
+  - postgres-service
+  - postgres-service.hyperopt-production.svc
+  - postgres-service.hyperopt-production.svc.cluster.local
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hyperopt-redis-tls
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: ssl
+spec:
+  secretName: hyperopt-redis-tls
+  issuerRef:
+    name: hyperopt-internal-ca
+    kind: ClusterIssuer
+  dnsNames:
+  - redis-service
+  - redis-service.hyperopt-production.svc
+  - redis-service.hyperopt-production.svc.cluster.local
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hyperopt-api-internal-tls
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: ssl
+spec:
+  secretName: hyperopt-api-internal-tls
+  issuerRef:
+    name: hyperopt-internal-ca
+    kind: ClusterIssuer
+  dnsNames:
+  - hyperopt-api-service
+  - hyperopt-api-service.hyperopt-production.svc
+  - hyperopt-api-service.hyperopt-production.svc.cluster.local
+
+---
+# Encryption Configuration for etcd and Kubernetes secrets
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hyperopt-encryption-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: encryption
+data:
+  encryption-config.yaml: |
+    kind: EncryptionConfiguration
+    apiVersion: apiserver.config.k8s.io/v1
+    resources:
+    - resources:
+      - secrets
+      - configmaps
+      providers:
+      - aescbc:
+          keys:
+          - name: key1
+            secret: ${KUBERNETES_ENCRYPTION_KEY}
+      - identity: {}
+    - resources:
+      - events
+      providers:
+      - identity: {}
+
+  postgres-encryption.conf: |
+    # PostgreSQL Encryption Configuration
+    ssl = on
+    ssl_cert_file = '/etc/ssl/certs/tls.crt'
+    ssl_key_file = '/etc/ssl/private/tls.key'
+    ssl_ca_file = '/etc/ssl/certs/ca.crt'
+    ssl_prefer_server_ciphers = on
+    ssl_ciphers = 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256'
+    ssl_min_protocol_version = 'TLSv1.2'
+    
+    # Data encryption at rest
+    data_encryption = on
+    encryption_key_file = '/etc/postgresql/encryption/master.key'
+    
+    # Connection encryption settings
+    ssl_ecdh_curve = 'prime256v1'
+    ssl_dh_params_file = '/etc/ssl/dhparams.pem'
+
+  redis-encryption.conf: |
+    # Redis TLS Configuration
+    tls-port 6380
+    port 0
+    tls-cert-file /etc/ssl/certs/tls.crt
+    tls-key-file /etc/ssl/private/tls.key
+    tls-ca-cert-file /etc/ssl/certs/ca.crt
+    tls-protocols "TLSv1.2 TLSv1.3"
+    tls-ciphers "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256"
+    tls-ciphersuites "TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256"
+    tls-prefer-server-ciphers yes
+    
+    # Client authentication
+    tls-auth-clients yes
+    tls-session-caching no
+    tls-session-cache-size 5000
+    tls-session-cache-timeout 60
+
+  nginx-ssl.conf: |
+    # Nginx SSL Configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256;
+    ssl_prefer_server_ciphers on;
+    ssl_ecdh_curve secp384r1;
+    ssl_session_timeout 10m;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    
+    # Security headers
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+
+---
+# Vault Configuration for Advanced Secret Management
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: vault
+data:
+  vault.hcl: |
+    ui = true
+    
+    listener "tcp" {
+      address     = "0.0.0.0:8200"
+      tls_cert_file = "/vault/tls/tls.crt"
+      tls_key_file  = "/vault/tls/tls.key"
+      tls_min_version = "tls12"
+    }
+    
+    storage "postgresql" {
+      connection_url = "postgres://vault:${VAULT_DB_PASSWORD}@postgres-service:5432/vault?sslmode=require"
+      table = "vault_kv_store"
+      max_parallel = "128"
+    }
+    
+    seal "transit" {
+      address = "https://vault-transit.hyperopt.company:8200"
+      key_name = "hyperopt-unseal-key"
+      mount_path = "transit/"
+      tls_skip_verify = false
+    }
+    
+    telemetry {
+      prometheus_retention_time = "30s"
+      disable_hostname = true
+    }
+
+---
+# HashiCorp Vault Deployment
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: vault
+spec:
+  serviceName: vault
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: vault
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: vault
+    spec:
+      serviceAccountName: vault
+      containers:
+      - name: vault
+        image: vault:1.14.0
+        ports:
+        - containerPort: 8200
+          name: vault
+        - containerPort: 8201
+          name: cluster
+        env:
+        - name: VAULT_ADDR
+          value: "https://127.0.0.1:8200"
+        - name: VAULT_API_ADDR
+          value: "https://vault.hyperopt-production.svc.cluster.local:8200"
+        - name: VAULT_CLUSTER_ADDR
+          value: "https://$(HOSTNAME).vault.hyperopt-production.svc.cluster.local:8201"
+        - name: VAULT_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: vault-secrets
+              key: db-password
+        - name: VAULT_LOG_LEVEL
+          value: "INFO"
+        volumeMounts:
+        - name: vault-config
+          mountPath: /vault/config/vault.hcl
+          subPath: vault.hcl
+        - name: vault-tls
+          mountPath: /vault/tls
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        securityContext:
+          capabilities:
+            add: ["IPC_LOCK"]
+        readinessProbe:
+          httpGet:
+            path: /v1/sys/health?standbyok=true
+            port: 8200
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /v1/sys/health?standbyok=true
+            port: 8200
+            scheme: HTTPS
+          initialDelaySeconds: 60
+          periodSeconds: 30
+      volumes:
+      - name: vault-config
+        configMap:
+          name: vault-config
+      - name: vault-tls
+        secret:
+          secretName: vault-tls
+  volumeClaimTemplates:
+  - metadata:
+      name: vault-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: vault
+spec:
+  publishNotReadyAddresses: true
+  ports:
+  - port: 8200
+    targetPort: 8200
+    name: vault
+  - port: 8201
+    targetPort: 8201
+    name: cluster
+  selector:
+    app: hyperopt-platform
+    component: vault
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: vault
+
+---
+# Vault RBAC
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-production
+  name: vault-role
+  labels:
+    app: hyperopt-platform
+    component: vault
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "create", "update", "delete"]
+- apiGroups: [""]
+  resources: ["serviceaccounts/token"]
+  verbs: ["create"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: vault
+subjects:
+- kind: ServiceAccount
+  name: vault
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: vault-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Vault Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-secrets
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: vault
+type: Opaque
+data:
+  db-password: ${BASE64_VAULT_DB_PASSWORD}
+  root-token: ${BASE64_VAULT_ROOT_TOKEN}
+  unseal-key: ${BASE64_VAULT_UNSEAL_KEY}
+
+---
+# Certificate for Vault
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vault-tls
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: vault
+spec:
+  secretName: vault-tls
+  issuerRef:
+    name: hyperopt-internal-ca
+    kind: ClusterIssuer
+  dnsNames:
+  - vault
+  - vault.hyperopt-production.svc
+  - vault.hyperopt-production.svc.cluster.local
+  - vault.hyperopt.company
+
+---
+# External Secrets Operator Configuration
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: vault-backend
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: secrets
+spec:
+  provider:
+    vault:
+      server: "https://vault.hyperopt-production.svc.cluster.local:8200"
+      path: "secret"
+      version: "v2"
+      auth:
+        kubernetes:
+          mountPath: "kubernetes"
+          role: "hyperopt-secrets-reader"
+          serviceAccountRef:
+            name: "external-secrets-vault"
+
+---
+# External Secret for application secrets
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: hyperopt-app-secrets
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: secrets
+spec:
+  refreshInterval: 300s
+  secretStoreRef:
+    name: vault-backend
+    kind: SecretStore
+  target:
+    name: hyperopt-secrets-external
+    creationPolicy: Owner
+  data:
+  - secretKey: DATABASE_PASSWORD
+    remoteRef:
+      key: secret/hyperopt/database
+      property: password
+  - secretKey: REDIS_PASSWORD
+    remoteRef:
+      key: secret/hyperopt/redis
+      property: password
+  - secretKey: JWT_SECRET_KEY
+    remoteRef:
+      key: secret/hyperopt/jwt
+      property: secret
+  - secretKey: API_KEY_ENCRYPTION_KEY
+    remoteRef:
+      key: secret/hyperopt/api-keys
+      property: encryption_key 

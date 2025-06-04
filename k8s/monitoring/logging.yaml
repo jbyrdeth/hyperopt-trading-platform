@@ -1,0 +1,665 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: hyperopt-elasticsearch
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: elasticsearch
+spec:
+  version: 8.8.0
+  nodeSets:
+  - name: master
+    count: 3
+    config:
+      node.store.allow_mmap: false
+      node.roles: ["master"]
+      xpack.security.enabled: true
+      xpack.security.transport.ssl.enabled: true
+      xpack.security.http.ssl.enabled: true
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
+        storageClassName: fast-ssd
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: 1000m
+            limits:
+              memory: 4Gi
+              cpu: 2000m
+          env:
+          - name: ES_JAVA_OPTS
+            value: "-Xms2g -Xmx2g"
+  - name: data
+    count: 3
+    config:
+      node.store.allow_mmap: false
+      node.roles: ["data", "ingest"]
+      xpack.security.enabled: true
+      xpack.security.transport.ssl.enabled: true
+      xpack.security.http.ssl.enabled: true
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500Gi
+        storageClassName: fast-ssd
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: 4Gi
+              cpu: 2000m
+            limits:
+              memory: 8Gi
+              cpu: 4000m
+          env:
+          - name: ES_JAVA_OPTS
+            value: "-Xms4g -Xmx4g"
+
+---
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: hyperopt-kibana
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: kibana
+spec:
+  version: 8.8.0
+  count: 2
+  elasticsearchRef:
+    name: hyperopt-elasticsearch
+  config:
+    server.publicBaseUrl: "https://logs.hyperopt.company"
+    server.name: "hyperopt-logs"
+    logging.root.level: "info"
+    xpack.security.enabled: true
+    xpack.encryptedSavedObjects.encryptionKey: ${KIBANA_ENCRYPTION_KEY}
+    elasticsearch.requestTimeout: 60000
+    elasticsearch.shardTimeout: 30000
+  podTemplate:
+    spec:
+      containers:
+      - name: kibana
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 500m
+          limits:
+            memory: 2Gi
+            cpu: 1000m
+        env:
+        - name: KIBANA_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: KIBANA_ENCRYPTION_KEY
+
+---
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: hyperopt-filebeat
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: filebeat
+spec:
+  type: filebeat
+  version: 8.8.0
+  elasticsearchRef:
+    name: hyperopt-elasticsearch
+  kibanaRef:
+    name: hyperopt-kibana
+  config:
+    filebeat.inputs:
+    - type: container
+      paths:
+        - /var/log/containers/*hyperopt*.log
+      processors:
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+            matchers:
+            - logs_path:
+                logs_path: "/var/log/containers/"
+        - decode_json_fields:
+            fields: ["message"]
+            target: "json"
+            overwrite_keys: true
+    
+    - type: log
+      paths:
+        - /var/log/pods/hyperopt-production_*/*/*.log
+      multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+      multiline.negate: true
+      multiline.match: after
+      processors:
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+
+    output.elasticsearch:
+      hosts: ["https://hyperopt-elasticsearch-es-http:9200"]
+      protocol: https
+      username: ${ELASTICSEARCH_USERNAME}
+      password: ${ELASTICSEARCH_PASSWORD}
+      ssl.certificate_authorities: ["/mnt/elastic-internal/http-certs/ca.crt"]
+      index: "hyperopt-logs-%{+yyyy.MM.dd}"
+      template.name: "hyperopt-logs"
+      template.pattern: "hyperopt-logs-*"
+      template.settings:
+        index.number_of_shards: 3
+        index.number_of_replicas: 1
+        index.refresh_interval: "30s"
+
+    setup.template.enabled: true
+    setup.template.settings:
+      index.number_of_shards: 3
+      index.number_of_replicas: 1
+
+    logging.level: info
+    logging.to_files: true
+    logging.files:
+      path: /var/log/filebeat
+      name: filebeat
+      keepfiles: 7
+      permissions: 0644
+
+  daemonSet:
+    podTemplate:
+      spec:
+        serviceAccountName: filebeat
+        terminationGracePeriodSeconds: 30
+        dnsPolicy: ClusterFirstWithHostNet
+        hostNetwork: true
+        containers:
+        - name: filebeat
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+          - name: varlogcontainers
+            mountPath: /var/log/containers
+            readOnly: true
+          - name: varlogpods
+            mountPath: /var/log/pods
+            readOnly: true
+          - name: varlibdockercontainers
+            mountPath: /var/lib/docker/containers
+            readOnly: true
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 100m
+            limits:
+              memory: 500Mi
+              cpu: 500m
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: ELASTICSEARCH_USERNAME
+            value: "elastic"
+          - name: ELASTICSEARCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: hyperopt-elasticsearch-es-elastic-user
+                key: elastic
+        volumes:
+        - name: varlogcontainers
+          hostPath:
+            path: /var/log/containers
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: filebeat
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: filebeat
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: filebeat
+  labels:
+    app: hyperopt-platform
+    component: filebeat
+rules:
+- apiGroups: [""]
+  resources:
+  - namespaces
+  - pods
+  - nodes
+  verbs:
+  - get
+  - watch
+  - list
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: filebeat
+  labels:
+    app: hyperopt-platform
+    component: filebeat
+subjects:
+- kind: ServiceAccount
+  name: filebeat
+  namespace: hyperopt-production
+roleRef:
+  kind: ClusterRole
+  name: filebeat
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Logstash for log processing and enrichment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperopt-logstash
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: logstash
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: logstash
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:8.8.0
+        ports:
+        - containerPort: 5044
+          name: beats
+        - containerPort: 9600
+          name: http
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: 1000m
+          limits:
+            memory: 4Gi
+            cpu: 2000m
+        env:
+        - name: LS_JAVA_OPTS
+          value: "-Xmx2g -Xms2g"
+        - name: ELASTICSEARCH_HOSTS
+          value: "https://hyperopt-elasticsearch-es-http:9200"
+        - name: ELASTICSEARCH_USERNAME
+          value: "elastic"
+        - name: ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-elasticsearch-es-elastic-user
+              key: elastic
+        volumeMounts:
+        - name: logstash-config
+          mountPath: /usr/share/logstash/pipeline/
+        - name: logstash-patterns
+          mountPath: /usr/share/logstash/patterns/
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9600
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9600
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: logstash-config
+        configMap:
+          name: logstash-config
+      - name: logstash-patterns
+        configMap:
+          name: logstash-patterns
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: logstash
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+
+    filter {
+      # Parse Kubernetes metadata
+      if [kubernetes] {
+        mutate {
+          add_field => { "k8s_namespace" => "%{[kubernetes][namespace]}" }
+          add_field => { "k8s_pod" => "%{[kubernetes][pod][name]}" }
+          add_field => { "k8s_container" => "%{[kubernetes][container][name]}" }
+        }
+      }
+
+      # Parse HyperOpt API logs
+      if [k8s_container] == "api" {
+        grok {
+          match => { 
+            "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{DATA:logger} %{GREEDYDATA:message_content}"
+          }
+          overwrite => [ "message" ]
+        }
+        
+        if [message_content] =~ /.*optimization.*/ {
+          mutate {
+            add_tag => [ "optimization" ]
+          }
+        }
+        
+        if [message_content] =~ /.*error.*|.*exception.*|.*failed.*/ {
+          mutate {
+            add_tag => [ "error" ]
+          }
+        }
+      }
+
+      # Parse Worker logs
+      if [k8s_container] =~ /worker.*/ {
+        grok {
+          match => { 
+            "message" => "%{TIMESTAMP_ISO8601:timestamp} \[%{DATA:worker_id}\] %{LOGLEVEL:level} %{GREEDYDATA:message_content}"
+          }
+          overwrite => [ "message" ]
+        }
+        
+        # Extract optimization metrics
+        if [message_content] =~ /Optimization completed/ {
+          grok {
+            match => {
+              "message_content" => "Optimization completed.*strategy=(?<strategy_name>[^\s]+).*duration=(?<duration_seconds>[0-9.]+).*roi=(?<roi_percentage>[0-9.-]+)"
+            }
+          }
+          
+          mutate {
+            convert => { "duration_seconds" => "float" }
+            convert => { "roi_percentage" => "float" }
+            add_tag => [ "optimization_completed" ]
+          }
+        }
+        
+        if [message_content] =~ /Optimization failed/ {
+          grok {
+            match => {
+              "message_content" => "Optimization failed.*strategy=(?<strategy_name>[^\s]+).*error=(?<error_type>[^\s]+)"
+            }
+          }
+          
+          mutate {
+            add_tag => [ "optimization_failed" ]
+          }
+        }
+      }
+
+      # Parse PostgreSQL logs
+      if [k8s_container] == "postgres" {
+        grok {
+          match => { 
+            "message" => "%{TIMESTAMP_ISO8601:timestamp} \[%{NUMBER:pid}\] %{LOGLEVEL:level}:  %{GREEDYDATA:message_content}"
+          }
+          overwrite => [ "message" ]
+        }
+        
+        if [message_content] =~ /.*slow query.*/ {
+          grok {
+            match => {
+              "message_content" => ".*duration: (?<query_duration>[0-9.]+) ms.*statement: (?<sql_query>.*)"
+            }
+          }
+          
+          mutate {
+            convert => { "query_duration" => "float" }
+            add_tag => [ "slow_query" ]
+          }
+        }
+      }
+
+      # Parse Redis logs
+      if [k8s_container] == "redis" {
+        grok {
+          match => { 
+            "message" => "%{NUMBER:pid}:%{CHAR:role} %{TIMESTAMP_ISO8601:timestamp} %{CHAR:level} %{GREEDYDATA:message_content}"
+          }
+          overwrite => [ "message" ]
+        }
+      }
+
+      # Add environment and service information
+      mutate {
+        add_field => { "environment" => "production" }
+        add_field => { "service" => "hyperopt-platform" }
+      }
+
+      # Convert timestamp
+      date {
+        match => [ "timestamp", "ISO8601" ]
+        target => "@timestamp"
+      }
+
+      # Remove sensitive information
+      mutate {
+        remove_field => [ "beat", "input", "agent", "ecs", "log", "host" ]
+      }
+    }
+
+    output {
+      elasticsearch {
+        hosts => ["${ELASTICSEARCH_HOSTS}"]
+        user => "${ELASTICSEARCH_USERNAME}"
+        password => "${ELASTICSEARCH_PASSWORD}"
+        ssl => true
+        ssl_certificate_verification => false
+        index => "hyperopt-logs-%{+YYYY.MM.dd}"
+        template_name => "hyperopt-logs"
+        template => "/usr/share/logstash/templates/hyperopt-template.json"
+        template_overwrite => true
+      }
+      
+      # Output metrics to separate index
+      if "optimization_completed" in [tags] or "optimization_failed" in [tags] {
+        elasticsearch {
+          hosts => ["${ELASTICSEARCH_HOSTS}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          ssl => true
+          ssl_certificate_verification => false
+          index => "hyperopt-metrics-%{+YYYY.MM.dd}"
+        }
+      }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-patterns
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: logstash
+data:
+  hyperopt: |
+    OPTIMIZATION_ID [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}
+    STRATEGY_NAME [A-Za-z][A-Za-z0-9_]*
+    ROI_PERCENTAGE [+-]?[0-9]+\.?[0-9]*
+    DURATION_SECONDS [0-9]+\.?[0-9]*
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: logstash
+spec:
+  ports:
+  - port: 5044
+    targetPort: 5044
+    name: beats
+  - port: 9600
+    targetPort: 9600
+    name: http
+  selector:
+    app: hyperopt-platform
+    component: logstash
+
+---
+# Kibana Dashboard Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-dashboards
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: kibana
+data:
+  hyperopt-operations-dashboard.json: |
+    {
+      "version": "8.8.0",
+      "objects": [
+        {
+          "id": "hyperopt-ops-dashboard",
+          "type": "dashboard",
+          "attributes": {
+            "title": "HyperOpt Operations Dashboard",
+            "type": "dashboard",
+            "description": "Operational monitoring for HyperOpt platform",
+            "panelsJSON": "[{\"version\":\"8.8.0\",\"gridData\":{\"x\":0,\"y\":0,\"w\":24,\"h\":15,\"i\":\"1\"},\"panelIndex\":\"1\",\"embeddableConfig\":{},\"panelRefName\":\"panel_1\"}]",
+            "timeRestore": false,
+            "timeTo": "now",
+            "timeFrom": "now-24h",
+            "refreshInterval": {
+              "pause": false,
+              "value": 30000
+            },
+            "kibanaSavedObjectMeta": {
+              "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[]}"
+            }
+          }
+        }
+      ]
+    }
+
+  optimization-logs-dashboard.json: |
+    {
+      "version": "8.8.0",
+      "objects": [
+        {
+          "id": "optimization-logs-dashboard",
+          "type": "dashboard",
+          "attributes": {
+            "title": "Optimization Logs Analysis",
+            "type": "dashboard",
+            "description": "Detailed analysis of optimization performance and errors",
+            "panelsJSON": "[{\"version\":\"8.8.0\",\"gridData\":{\"x\":0,\"y\":0,\"w\":48,\"h\":20,\"i\":\"1\"},\"panelIndex\":\"1\",\"embeddableConfig\":{},\"panelRefName\":\"panel_1\"}]",
+            "timeRestore": false,
+            "timeTo": "now",
+            "timeFrom": "now-7d"
+          }
+        }
+      ]
+    }
+
+---
+# Log retention and index management
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-ilm-policy
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: elasticsearch
+data:
+  hyperopt-logs-policy.json: |
+    {
+      "policy": {
+        "phases": {
+          "hot": {
+            "actions": {
+              "set_priority": {
+                "priority": 100
+              },
+              "rollover": {
+                "max_size": "10gb",
+                "max_age": "7d"
+              }
+            }
+          },
+          "warm": {
+            "min_age": "7d",
+            "actions": {
+              "set_priority": {
+                "priority": 50
+              },
+              "allocate": {
+                "number_of_replicas": 0
+              }
+            }
+          },
+          "cold": {
+            "min_age": "30d",
+            "actions": {
+              "set_priority": {
+                "priority": 0
+              }
+            }
+          },
+          "delete": {
+            "min_age": "90d"
+          }
+        }
+      }
+    } 

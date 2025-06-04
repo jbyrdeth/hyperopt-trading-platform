@@ -1,0 +1,22 @@
+debug: false
+environment: production
+logging:
+  backup_count: 5
+  file_path: /var/log/trading-platform/application.log
+  level: INFO
+  max_size: 100MB
+monitoring:
+  alert_thresholds:
+    cpu_percent: 80
+    disk_percent: 90
+    memory_percent: 85
+  health_check_interval: 300
+performance:
+  max_concurrent_strategies: 24
+  memory_limit: 8GB
+  optimization_timeout: 3600
+strategies:
+  default_position_size: 0.1
+  max_position_size: 0.2
+  stop_loss_enabled: true
+  take_profit_enabled: true

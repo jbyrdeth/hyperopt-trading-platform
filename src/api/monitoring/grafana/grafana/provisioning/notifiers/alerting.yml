@@ -1,0 +1,99 @@
+notifiers:
+  - name: email-critical
+    type: email
+    uid: email_critical
+    org_id: 1
+    is_default: false
+    send_reminder: true
+    disable_resolve_message: false
+    frequency: "5m"
+    settings:
+      addresses: "ops-team@trading-api.com"
+      subject: "🚨 CRITICAL Trading API Alert"
+      single_email: false
+
+  - name: email-ops
+    type: email
+    uid: email_ops
+    org_id: 1
+    is_default: false
+    send_reminder: true
+    disable_resolve_message: false
+    frequency: "30m"
+    settings:
+      addresses: "ops-team@trading-api.com,dev-team@trading-api.com"
+      subject: "⚠️ Trading API Alert"
+      single_email: false
+
+  - name: slack-critical
+    type: slack
+    uid: slack_critical
+    org_id: 1
+    is_default: false
+    send_reminder: true
+    disable_resolve_message: false
+    frequency: "5m"
+    settings:
+      url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+      channel: "#alerts-critical"
+      username: "Grafana"
+      title: "🚨 Critical Alert"
+      text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}"
+      iconEmoji: ":exclamation:"
+      iconUrl: ""
+      mentionUsers: ""
+      mentionGroups: ""
+      mentionChannel: "here"
+
+  - name: slack-warnings
+    type: slack
+    uid: slack_warnings
+    org_id: 1
+    is_default: false
+    send_reminder: true
+    disable_resolve_message: false
+    frequency: "30m"
+    settings:
+      url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+      channel: "#alerts-warning"
+      username: "Grafana"
+      title: "⚠️ Warning Alert"
+      text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}"
+      iconEmoji: ":warning:"
+      iconUrl: ""
+      mentionUsers: ""
+      mentionGroups: ""
+      mentionChannel: ""
+
+  - name: webhook-generic
+    type: webhook
+    uid: webhook_generic
+    org_id: 1
+    is_default: true
+    send_reminder: false
+    disable_resolve_message: false
+    frequency: "10m"
+    settings:
+      url: "http://host.docker.internal:8000/api/v1/monitoring/webhook/alerts"
+      httpMethod: "POST"
+      maxAlerts: 0
+
+  - name: pagerduty-critical
+    type: pagerduty
+    uid: pagerduty_critical
+    org_id: 1
+    is_default: false
+    send_reminder: true
+    disable_resolve_message: false
+    frequency: "1m"
+    settings:
+      integrationKey: "YOUR_PAGERDUTY_INTEGRATION_KEY"
+      severity: "critical"
+      component: "trading-api"
+      group: "production"
+      summary: "{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+
+delete_notifiers:
+  - name: "old-email-notifier"
+    uid: "old_email_uid"
+    org_id: 1 

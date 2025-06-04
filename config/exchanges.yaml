@@ -1,0 +1,371 @@
+# Exchange Configuration
+# Multi-exchange data fetching with fallback logic
+
+# =============================================================================
+# EXCHANGE SETTINGS
+# =============================================================================
+exchanges:
+  # Primary exchange (highest priority)
+  kucoin:
+    name: "KuCoin"
+    enabled: true
+    priority: 1
+    api_key: null  # Set via environment variables
+    secret: null
+    sandbox: false
+    rate_limit: 10  # requests per second
+    timeout: 30000  # 30 seconds
+    
+    # Supported assets
+    assets:
+      BTC: "BTC/USDT"
+      ETH: "ETH/USDT"
+      SOL: "SOL/USDT"
+      ADA: "ADA/USDT"
+      DOT: "DOT/USDT"
+      LINK: "LINK/USDT"
+      AVAX: "AVAX/USDT"
+      MATIC: "MATIC/USDT"
+    
+    # Supported timeframes
+    timeframes:
+      - "1h"
+      - "4h"
+      - "1d"
+      - "1w"
+    
+    # Data limits
+    max_candles: 1500  # Maximum candles per request
+    historical_limit: 365  # Days of historical data
+    
+  # Secondary exchange
+  binance:
+    name: "Binance"
+    enabled: true
+    priority: 2
+    api_key: null
+    secret: null
+    sandbox: false
+    rate_limit: 20  # requests per second
+    timeout: 30000
+    
+    assets:
+      BTC: "BTC/USDT"
+      ETH: "ETH/USDT"
+      SOL: "SOL/USDT"
+      ADA: "ADA/USDT"
+      DOT: "DOT/USDT"
+      LINK: "LINK/USDT"
+      AVAX: "AVAX/USDT"
+      MATIC: "MATIC/USDT"
+    
+    timeframes:
+      - "1h"
+      - "4h"
+      - "1d"
+      - "1w"
+    
+    max_candles: 1000
+    historical_limit: 365
+    
+  # Tertiary exchange
+  coinbase:
+    name: "Coinbase Pro"
+    enabled: true
+    priority: 3
+    api_key: null
+    secret: null
+    passphrase: null
+    sandbox: false
+    rate_limit: 10
+    timeout: 30000
+    
+    assets:
+      BTC: "BTC-USD"
+      ETH: "ETH-USD"
+      SOL: "SOL-USD"
+      ADA: "ADA-USD"
+      DOT: "DOT-USD"
+      LINK: "LINK-USD"
+      AVAX: "AVAX-USD"
+      MATIC: "MATIC-USD"
+    
+    timeframes:
+      - "1h"
+      - "4h"
+      - "1d"
+    
+    max_candles: 300
+    historical_limit: 365
+
+# =============================================================================
+# FALLBACK CONFIGURATION
+# =============================================================================
+fallback:
+  # Fallback strategy
+  strategy: "priority_order"  # priority_order, round_robin, fastest
+  
+  # Retry settings
+  max_retries: 3
+  retry_delay: 5  # seconds
+  exponential_backoff: true
+  
+  # Failure handling
+  failure_threshold: 3  # failures before switching exchange
+  cooldown_period: 300  # 5 minutes before retrying failed exchange
+  
+  # Data validation
+  validate_data: true
+  min_data_points: 100  # Minimum data points required
+  max_gap_tolerance: 2  # Maximum allowed gaps in data
+  
+  # Emergency fallback
+  emergency_fallback:
+    enabled: true
+    source: "yfinance"  # Yahoo Finance as last resort
+    assets:
+      BTC: "BTC-USD"
+      ETH: "ETH-USD"
+
+# =============================================================================
+# DATA QUALITY SETTINGS
+# =============================================================================
+data_quality:
+  # Validation rules
+  validation:
+    check_ohlc_consistency: true  # O <= H, L <= C, etc.
+    check_volume_positive: true
+    check_timestamp_sequence: true
+    check_price_spikes: true
+    
+  # Spike detection
+  spike_detection:
+    enabled: true
+    threshold: 0.1  # 10% price spike threshold
+    window: 5  # periods to check
+    action: "flag"  # flag, remove, interpolate
+    
+  # Gap handling
+  gap_handling:
+    enabled: true
+    max_gap_hours: 2  # Maximum gap in hours
+    fill_method: "forward_fill"  # forward_fill, interpolate, remove
+    
+  # Outlier detection
+  outlier_detection:
+    enabled: true
+    method: "iqr"  # iqr, zscore, isolation_forest
+    threshold: 3.0  # Standard deviations or IQR multiplier
+    action: "flag"  # flag, remove, winsorize
+
+# =============================================================================
+# CACHING CONFIGURATION
+# =============================================================================
+caching:
+  # Cache settings
+  enabled: true
+  cache_directory: "data/cache"
+  cache_format: "hdf5"  # hdf5, parquet, csv
+  
+  # Cache expiry
+  expiry_rules:
+    "1h": 3600    # 1 hour for 1h data
+    "4h": 14400   # 4 hours for 4h data
+    "1d": 86400   # 24 hours for 1d data
+    "1w": 604800  # 1 week for 1w data
+  
+  # Cache management
+  max_cache_size: "5GB"
+  cleanup_frequency: "daily"
+  compression: true
+  
+  # Cache validation
+  validate_cache: true
+  cache_version: "1.0"
+
+# =============================================================================
+# RATE LIMITING
+# =============================================================================
+rate_limiting:
+  # Global rate limiting
+  global_limit: 100  # requests per minute across all exchanges
+  
+  # Per-exchange limits (overrides exchange-specific limits)
+  exchange_limits:
+    kucoin: 600    # 10 per second * 60 seconds
+    binance: 1200  # 20 per second * 60 seconds
+    coinbase: 600  # 10 per second * 60 seconds
+  
+  # Adaptive rate limiting
+  adaptive:
+    enabled: true
+    monitor_response_times: true
+    slow_down_threshold: 5000  # 5 seconds response time
+    speed_up_threshold: 1000   # 1 second response time
+    adjustment_factor: 0.1     # 10% adjustment
+  
+  # Rate limit handling
+  on_limit_exceeded:
+    action: "wait"  # wait, skip, switch_exchange
+    wait_time: 60   # seconds to wait
+    max_wait_time: 300  # maximum wait time
+
+# =============================================================================
+# ASSET CONFIGURATION
+# =============================================================================
+assets:
+  # Primary assets for optimization
+  primary:
+    - symbol: "BTC"
+      name: "Bitcoin"
+      min_volume: 1000000  # Minimum daily volume
+      priority: 1
+      
+    - symbol: "ETH"
+      name: "Ethereum"
+      min_volume: 500000
+      priority: 2
+      
+    - symbol: "SOL"
+      name: "Solana"
+      min_volume: 100000
+      priority: 3
+  
+  # Secondary assets for validation
+  secondary:
+    - symbol: "ADA"
+      name: "Cardano"
+      min_volume: 50000
+      
+    - symbol: "DOT"
+      name: "Polkadot"
+      min_volume: 50000
+      
+    - symbol: "LINK"
+      name: "Chainlink"
+      min_volume: 50000
+      
+    - symbol: "AVAX"
+      name: "Avalanche"
+      min_volume: 50000
+      
+    - symbol: "MATIC"
+      name: "Polygon"
+      min_volume: 50000
+
+# =============================================================================
+# TIMEFRAME CONFIGURATION
+# =============================================================================
+timeframes:
+  # Supported timeframes
+  supported:
+    "1h":
+      name: "1 Hour"
+      seconds: 3600
+      max_history_days: 365
+      priority: 1
+      
+    "4h":
+      name: "4 Hours"
+      seconds: 14400
+      max_history_days: 730  # 2 years
+      priority: 2
+      
+    "1d":
+      name: "1 Day"
+      seconds: 86400
+      max_history_days: 1825  # 5 years
+      priority: 3
+      
+    "1w":
+      name: "1 Week"
+      seconds: 604800
+      max_history_days: 3650  # 10 years
+      priority: 4
+  
+  # Default timeframe for optimization
+  default: "4h"
+  
+  # Multi-timeframe analysis
+  multi_timeframe:
+    enabled: true
+    combinations:
+      - primary: "1h"
+        secondary: "4h"
+      - primary: "4h"
+        secondary: "1d"
+      - primary: "1d"
+        secondary: "1w"
+
+# =============================================================================
+# ERROR HANDLING
+# =============================================================================
+error_handling:
+  # Retry configuration
+  retry:
+    max_attempts: 3
+    base_delay: 1  # seconds
+    max_delay: 60  # seconds
+    exponential_base: 2
+    
+  # Error types and handling
+  error_types:
+    network_error:
+      action: "retry"
+      max_retries: 5
+      
+    rate_limit_error:
+      action: "wait_and_retry"
+      wait_time: 60
+      
+    authentication_error:
+      action: "skip_exchange"
+      notify: true
+      
+    data_error:
+      action: "validate_and_clean"
+      fallback: true
+      
+    api_error:
+      action: "switch_exchange"
+      cooldown: 300
+  
+  # Logging
+  log_errors: true
+  error_log_file: "logs/exchange_errors.log"
+  
+  # Notifications
+  notifications:
+    enabled: false  # Set to true for production
+    email: null     # Set email for notifications
+    webhook: null   # Set webhook URL for notifications
+
+# =============================================================================
+# MONITORING
+# =============================================================================
+monitoring:
+  # Health checks
+  health_checks:
+    enabled: true
+    interval: 300  # 5 minutes
+    timeout: 30    # seconds
+    
+  # Performance monitoring
+  performance:
+    track_response_times: true
+    track_success_rates: true
+    track_data_quality: true
+    
+  # Metrics collection
+  metrics:
+    enabled: true
+    collection_interval: 60  # seconds
+    retention_days: 30
+    
+  # Alerts
+  alerts:
+    enabled: false
+    thresholds:
+      response_time: 10000  # 10 seconds
+      success_rate: 0.95    # 95%
+      data_quality: 0.90    # 90% 

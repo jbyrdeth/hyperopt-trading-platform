@@ -1,0 +1,281 @@
+# Optimization Configuration
+# Settings for hyperparameter optimization and validation
+
+# =============================================================================
+# HYPEROPT CONFIGURATION
+# =============================================================================
+hyperopt:
+  # Algorithm settings
+  algorithm: "tpe"  # Tree-structured Parzen Estimator
+  max_evals: 100    # Maximum evaluations per strategy
+  timeout: 3600     # Timeout in seconds (1 hour per strategy)
+  
+  # Multi-objective optimization weights
+  objectives:
+    annual_return:
+      weight: 0.25
+      target: "maximize"
+      min_threshold: 0.20  # 20% minimum
+    
+    sharpe_ratio:
+      weight: 0.25
+      target: "maximize"
+      min_threshold: 1.0
+    
+    max_drawdown:
+      weight: 0.20
+      target: "minimize"
+      max_threshold: 0.50  # 50% maximum
+    
+    profit_factor:
+      weight: 0.15
+      target: "maximize"
+      min_threshold: 1.5
+    
+    win_rate:
+      weight: 0.15
+      target: "optimize"
+      min_threshold: 0.25  # 25% minimum
+      max_threshold: 0.75  # 75% maximum (penalty above)
+
+  # Parallel processing
+  parallel:
+    enabled: true
+    n_jobs: -1  # Use all available cores
+    strategy_parallel: true  # Run multiple strategies in parallel
+    parameter_parallel: true  # Parallel hyperopt trials
+
+# =============================================================================
+# TOURNAMENT SYSTEM
+# =============================================================================
+tournament:
+  # Pre-screening phase
+  pre_screening:
+    enabled: true
+    max_evals: 20  # Quick evaluation with default parameters
+    min_annual_return: 0.15  # 15% minimum to proceed
+    timeout: 300  # 5 minutes per strategy
+  
+  # Performance filtering
+  filtering:
+    correlation_threshold: 0.8  # Remove highly correlated strategies
+    min_trades_filter: 12  # Minimum trades per year
+    max_trades_filter: 300  # Maximum trades per year
+    
+  # Tournament rounds
+  rounds:
+    round_1:
+      description: "All strategies with basic optimization"
+      strategies: "all"  # All 65 strategies
+      max_evals: 50
+      timeout: 1800  # 30 minutes
+      
+    round_2:
+      description: "Top performers with deep optimization"
+      strategies: "top_20"  # Top 20 from round 1
+      max_evals: 200
+      timeout: 7200  # 2 hours
+      
+    round_3:
+      description: "Finalists with extensive validation"
+      strategies: "top_5"  # Top 5 from round 2
+      max_evals: 500
+      timeout: 14400  # 4 hours
+
+# =============================================================================
+# VALIDATION CONFIGURATION
+# =============================================================================
+validation:
+  # Data splitting
+  train_split: 0.70  # 70% for training
+  validation_split: 0.15  # 15% for validation
+  test_split: 0.15  # 15% for out-of-sample testing
+  
+  # Walk-forward analysis
+  walk_forward:
+    enabled: true
+    optimization_window: 180  # 6 months in days
+    testing_window: 90  # 3 months in days
+    step_size: 30  # 1 month step
+    min_periods: 3  # Minimum number of periods
+  
+  # Cross-asset validation
+  cross_asset:
+    enabled: true
+    primary_asset: "BTC"
+    validation_assets: ["ETH", "SOL", "ADA", "DOT"]
+    correlation_threshold: 0.3  # Minimum correlation for validation
+  
+  # Random period testing
+  random_testing:
+    enabled: true
+    n_samples: 100  # Number of random periods
+    min_period_days: 90  # Minimum period length
+    max_period_days: 365  # Maximum period length
+    seed: 42  # For reproducibility
+  
+  # Statistical significance
+  statistical_tests:
+    enabled: true
+    confidence_level: 0.95  # 95% confidence
+    bootstrap_samples: 1000
+    permutation_tests: true
+    
+  # Regime analysis
+  regime_analysis:
+    enabled: true
+    regimes: ["bull", "bear", "sideways"]
+    volatility_threshold: 0.02  # 2% daily volatility
+    trend_threshold: 0.1  # 10% trend strength
+
+# =============================================================================
+# OVERFITTING PREVENTION
+# =============================================================================
+overfitting_prevention:
+  # Trade frequency constraints
+  trade_frequency:
+    min_trades_per_year: 12
+    max_trades_per_year: 300
+    penalty_factor: 0.5  # Penalty for violations
+  
+  # Win rate penalties
+  win_rate_penalty:
+    enabled: true
+    threshold: 0.85  # 85% win rate threshold
+    penalty_factor: 0.3  # Reduce score by 30%
+  
+  # Robustness scoring
+  robustness:
+    enabled: true
+    consistency_weight: 0.3  # Weight for consistency across periods
+    stability_weight: 0.2  # Weight for parameter stability
+    generalization_weight: 0.5  # Weight for cross-asset performance
+  
+  # Parameter stability
+  parameter_stability:
+    enabled: true
+    max_parameter_drift: 0.2  # 20% maximum drift
+    stability_periods: 5  # Number of periods to check
+  
+  # Complexity penalty
+  complexity_penalty:
+    enabled: true
+    max_parameters: 10  # Maximum number of parameters
+    penalty_per_parameter: 0.02  # 2% penalty per extra parameter
+
+# =============================================================================
+# PERFORMANCE THRESHOLDS
+# =============================================================================
+performance_thresholds:
+  # Minimum requirements
+  minimum:
+    annual_return: 0.15  # 15%
+    sharpe_ratio: 0.8
+    profit_factor: 1.3
+    max_drawdown: 0.60  # 60%
+    win_rate: 0.20  # 20%
+  
+  # Good performance
+  good:
+    annual_return: 0.25  # 25%
+    sharpe_ratio: 1.2
+    profit_factor: 1.8
+    max_drawdown: 0.40  # 40%
+    win_rate: 0.45  # 45%
+  
+  # Excellent performance
+  excellent:
+    annual_return: 0.40  # 40%
+    sharpe_ratio: 2.0
+    profit_factor: 2.5
+    max_drawdown: 0.25  # 25%
+    win_rate: 0.60  # 60%
+
+# =============================================================================
+# OPTIMIZATION STRATEGIES
+# =============================================================================
+optimization_strategies:
+  # Strategy prioritization
+  priority_order:
+    - "trend_following"  # Start with trend following
+    - "mean_reversion"   # Then mean reversion
+    - "momentum"         # Momentum strategies
+    - "volume_based"     # Volume-based strategies
+    - "volatility"       # Volatility strategies
+    - "multi_timeframe"  # Multi-timeframe strategies
+    - "pattern_recognition"  # Pattern recognition
+    - "statistical_arbitrage"  # Statistical arbitrage
+    - "machine_learning"  # Machine learning
+    - "alternative"      # Alternative strategies
+  
+  # Adaptive optimization
+  adaptive:
+    enabled: true
+    performance_threshold: 0.8  # Adapt if performance drops below 80%
+    adaptation_frequency: 30  # Days between adaptations
+    max_adaptations: 5  # Maximum number of adaptations
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 20  # Stop if no improvement for 20 evaluations
+    min_improvement: 0.01  # Minimum improvement threshold
+    
+# =============================================================================
+# CACHING AND PERSISTENCE
+# =============================================================================
+caching:
+  # Result caching
+  cache_results: true
+  cache_directory: "data/cache"
+  cache_expiry: 86400  # 24 hours in seconds
+  
+  # Intermediate results
+  save_intermediate: true
+  checkpoint_frequency: 10  # Save every 10 evaluations
+  
+  # Data caching
+  cache_data: true
+  data_cache_size: "1GB"  # Maximum cache size
+  
+# =============================================================================
+# LOGGING AND MONITORING
+# =============================================================================
+logging:
+  # Log levels
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  
+  # Log files
+  optimization_log: "logs/optimization.log"
+  validation_log: "logs/validation.log"
+  performance_log: "logs/performance.log"
+  
+  # Progress tracking
+  progress_bar: true
+  update_frequency: 5  # Update every 5 evaluations
+  
+  # Monitoring
+  monitor_memory: true
+  monitor_cpu: true
+  alert_thresholds:
+    memory_usage: 0.8  # 80% memory usage
+    cpu_usage: 0.9  # 90% CPU usage
+
+# =============================================================================
+# EXPORT SETTINGS
+# =============================================================================
+export:
+  # Results export
+  export_format: ["json", "csv", "excel"]
+  export_directory: "results"
+  
+  # Top strategies
+  export_top_n: 10  # Export top 10 strategies
+  include_parameters: true
+  include_metrics: true
+  include_trades: true
+  
+  # Visualization export
+  export_charts: true
+  chart_format: ["png", "html"]
+  chart_dpi: 300  # High resolution charts 

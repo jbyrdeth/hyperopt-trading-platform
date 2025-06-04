@@ -1,0 +1,582 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: executive-dashboard-config
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+data:
+  dashboard-config.json: |
+    {
+      "dashboard": {
+        "title": "HyperOpt Executive Dashboard",
+        "description": "Real-time business intelligence and strategy performance analytics",
+        "refresh_interval": "30s",
+        "time_range": {
+          "from": "now-30d",
+          "to": "now"
+        },
+        "panels": [
+          {
+            "id": "revenue_overview",
+            "title": "Revenue Overview",
+            "type": "stat",
+            "position": {"x": 0, "y": 0, "w": 6, "h": 4},
+            "targets": [
+              {
+                "expr": "sum(hyperopt_revenue_total)",
+                "legendFormat": "Total Revenue",
+                "refId": "A"
+              },
+              {
+                "expr": "rate(hyperopt_revenue_total[30d])",
+                "legendFormat": "Monthly Growth Rate",
+                "refId": "B"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "currencyUSD",
+                "color": {"mode": "palette-classic"},
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 100000},
+                    {"color": "green", "value": 500000}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "active_users",
+            "title": "Active Users & Engagement",
+            "type": "timeseries",
+            "position": {"x": 6, "y": 0, "w": 6, "h": 4},
+            "targets": [
+              {
+                "expr": "hyperopt_active_users_daily",
+                "legendFormat": "Daily Active Users",
+                "refId": "A"
+              },
+              {
+                "expr": "hyperopt_active_users_monthly",
+                "legendFormat": "Monthly Active Users",
+                "refId": "B"
+              },
+              {
+                "expr": "hyperopt_premium_users",
+                "legendFormat": "Premium Users",
+                "refId": "C"
+              }
+            ]
+          },
+          {
+            "id": "strategy_performance",
+            "title": "Top Performing Strategies",
+            "type": "table",
+            "position": {"x": 0, "y": 4, "w": 12, "h": 6},
+            "targets": [
+              {
+                "expr": "topk(10, hyperopt_strategy_roi_30d)",
+                "legendFormat": "{{strategy_name}}",
+                "refId": "A",
+                "format": "table"
+              }
+            ],
+            "transformations": [
+              {
+                "id": "organize",
+                "options": {
+                  "excludeByName": {"__name__": true, "Time": true},
+                  "renameByName": {
+                    "strategy_name": "Strategy Name",
+                    "Value": "30-Day ROI (%)",
+                    "category": "Category",
+                    "total_trades": "Total Trades",
+                    "win_rate": "Win Rate (%)",
+                    "avg_profit": "Avg Profit ($)"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "platform_health",
+            "title": "Platform Health Metrics",
+            "type": "stat",
+            "position": {"x": 0, "y": 10, "w": 4, "h": 3},
+            "targets": [
+              {
+                "expr": "hyperopt_api_uptime_percentage",
+                "legendFormat": "API Uptime",
+                "refId": "A"
+              },
+              {
+                "expr": "hyperopt_optimization_success_rate",
+                "legendFormat": "Optimization Success Rate",
+                "refId": "B"
+              },
+              {
+                "expr": "hyperopt_avg_response_time_ms",
+                "legendFormat": "Avg Response Time (ms)",
+                "refId": "C"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 95},
+                    {"color": "green", "value": 99}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "geographical_usage",
+            "title": "Global Usage Distribution",
+            "type": "geomap",
+            "position": {"x": 4, "y": 10, "w": 8, "h": 6},
+            "targets": [
+              {
+                "expr": "sum by (country) (hyperopt_users_by_country)",
+                "legendFormat": "{{country}}",
+                "refId": "A"
+              }
+            ],
+            "options": {
+              "view": {
+                "id": "coords",
+                "lat": 40,
+                "lon": 0,
+                "zoom": 2
+              }
+            }
+          },
+          {
+            "id": "revenue_by_tier",
+            "title": "Revenue by User Tier",
+            "type": "piechart",
+            "position": {"x": 0, "y": 16, "w": 6, "h": 4},
+            "targets": [
+              {
+                "expr": "sum by (tier) (hyperopt_revenue_by_tier)",
+                "legendFormat": "{{tier}}",
+                "refId": "A"
+              }
+            ]
+          },
+          {
+            "id": "optimization_volume",
+            "title": "Optimization Volume Trends",
+            "type": "timeseries",
+            "position": {"x": 6, "y": 16, "w": 6, "h": 4},
+            "targets": [
+              {
+                "expr": "rate(hyperopt_optimizations_total[1h])",
+                "legendFormat": "Optimizations per Hour",
+                "refId": "A"
+              },
+              {
+                "expr": "hyperopt_pending_optimizations",
+                "legendFormat": "Pending Optimizations",
+                "refId": "B"
+              }
+            ]
+          },
+          {
+            "id": "customer_satisfaction",
+            "title": "Customer Satisfaction Metrics",
+            "type": "gauge",
+            "position": {"x": 0, "y": 20, "w": 4, "h": 4},
+            "targets": [
+              {
+                "expr": "hyperopt_customer_satisfaction_score",
+                "legendFormat": "NPS Score",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "min": 0,
+                "max": 100,
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 50},
+                    {"color": "green", "value": 80}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "cost_analysis",
+            "title": "Infrastructure Cost Analysis",
+            "type": "timeseries",
+            "position": {"x": 4, "y": 20, "w": 8, "h": 4},
+            "targets": [
+              {
+                "expr": "hyperopt_infrastructure_costs_daily",
+                "legendFormat": "Infrastructure Costs",
+                "refId": "A"
+              },
+              {
+                "expr": "hyperopt_revenue_daily - hyperopt_infrastructure_costs_daily",
+                "legendFormat": "Net Profit",
+                "refId": "B"
+              }
+            ]
+          }
+        ],
+        "templating": {
+          "list": [
+            {
+              "name": "time_range",
+              "type": "interval",
+              "options": ["1h", "6h", "12h", "1d", "7d", "30d", "90d"]
+            },
+            {
+              "name": "strategy_category",
+              "type": "query",
+              "query": "label_values(hyperopt_strategy_info, category)"
+            }
+          ]
+        }
+      }
+    }
+
+  business-metrics.yaml: |
+    # Business Metrics Configuration for HyperOpt Platform
+    business_metrics:
+      revenue:
+        total_revenue:
+          query: "sum(hyperopt_subscription_revenue + hyperopt_transaction_fees + hyperopt_premium_features)"
+          description: "Total platform revenue across all sources"
+          unit: "USD"
+        
+        monthly_recurring_revenue:
+          query: "sum(hyperopt_subscription_revenue) / 30"
+          description: "Monthly Recurring Revenue from subscriptions"
+          unit: "USD"
+        
+        average_revenue_per_user:
+          query: "sum(hyperopt_revenue_total) / sum(hyperopt_active_users_monthly)"
+          description: "Average revenue generated per monthly active user"
+          unit: "USD"
+        
+        churn_rate:
+          query: "(sum(hyperopt_users_cancelled_monthly) / sum(hyperopt_users_total_monthly)) * 100"
+          description: "Monthly customer churn rate percentage"
+          unit: "percent"
+      
+      performance:
+        platform_roi:
+          query: "((sum(hyperopt_revenue_total) - sum(hyperopt_costs_total)) / sum(hyperopt_costs_total)) * 100"
+          description: "Overall platform return on investment"
+          unit: "percent"
+        
+        strategy_success_rate:
+          query: "(sum(hyperopt_profitable_strategies) / sum(hyperopt_total_strategies)) * 100"
+          description: "Percentage of strategies showing positive returns"
+          unit: "percent"
+        
+        user_satisfaction:
+          query: "avg(hyperopt_user_rating)"
+          description: "Average user satisfaction rating"
+          unit: "rating"
+      
+      growth:
+        user_growth_rate:
+          query: "rate(hyperopt_total_users[30d]) * 100"
+          description: "Monthly user acquisition growth rate"
+          unit: "percent"
+        
+        premium_conversion_rate:
+          query: "(sum(hyperopt_premium_users) / sum(hyperopt_total_users)) * 100"
+          description: "Percentage of users converting to premium"
+          unit: "percent"
+        
+        market_penetration:
+          query: "sum(hyperopt_active_regions)"
+          description: "Number of geographical markets with active users"
+          unit: "count"
+
+---
+# Executive Dashboard Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: executive-dashboard
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: executive-dashboard
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: executive-dashboard
+    spec:
+      serviceAccountName: executive-dashboard
+      containers:
+      - name: dashboard
+        image: ghcr.io/hyperopt/executive-dashboard:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: GRAFANA_URL
+          value: "http://grafana:3000"
+        - name: PROMETHEUS_URL
+          value: "http://prometheus:9090"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: REDIS_URL
+        - name: NODE_ENV
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        volumeMounts:
+        - name: dashboard-config
+          mountPath: /app/config
+        - name: dashboard-storage
+          mountPath: /app/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: dashboard-config
+        configMap:
+          name: executive-dashboard-config
+      - name: dashboard-storage
+        persistentVolumeClaim:
+          claimName: dashboard-storage-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: executive-dashboard
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: http
+  selector:
+    app: hyperopt-platform
+    component: executive-dashboard
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: executive-dashboard
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+
+---
+# Persistent storage for dashboard data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dashboard-storage-pvc
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
+
+---
+# Ingress for external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: executive-dashboard-ingress
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/auth-url: "https://auth.hyperopt.company/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.hyperopt.company/oauth2/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+spec:
+  tls:
+  - hosts:
+    - dashboard.hyperopt.company
+    secretName: hyperopt-tls
+  rules:
+  - host: dashboard.hyperopt.company
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: executive-dashboard
+            port:
+              number: 3000
+
+---
+# Business Intelligence Data Pipeline
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bi-data-pipeline
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperopt-platform
+      component: bi-data-pipeline
+  template:
+    metadata:
+      labels:
+        app: hyperopt-platform
+        component: bi-data-pipeline
+    spec:
+      serviceAccountName: bi-data-pipeline
+      containers:
+      - name: data-pipeline
+        image: ghcr.io/hyperopt/bi-data-pipeline:latest
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: hyperopt-secrets
+              key: DATABASE_URL
+        - name: PROMETHEUS_URL
+          value: "http://prometheus:9090"
+        - name: SCHEDULE_INTERVAL
+          value: "300"  # 5 minutes
+        volumeMounts:
+        - name: pipeline-config
+          mountPath: /app/config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      volumes:
+      - name: pipeline-config
+        configMap:
+          name: executive-dashboard-config
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bi-data-pipeline
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+
+---
+# RBAC for Business Intelligence
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hyperopt-production
+  name: business-intelligence-role
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: executive-dashboard-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+subjects:
+- kind: ServiceAccount
+  name: executive-dashboard
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: business-intelligence-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bi-data-pipeline-binding
+  namespace: hyperopt-production
+  labels:
+    app: hyperopt-platform
+    component: business-intelligence
+subjects:
+- kind: ServiceAccount
+  name: bi-data-pipeline
+  namespace: hyperopt-production
+roleRef:
+  kind: Role
+  name: business-intelligence-role
+  apiGroup: rbac.authorization.k8s.io 
