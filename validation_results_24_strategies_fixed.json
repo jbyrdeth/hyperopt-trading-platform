@@ -1,0 +1,326 @@
+{
+  "MovingAverageCrossover": {
+    "name": "MovingAverageCrossover",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0.0,
+      "total_trades": 0,
+      "win_rate": 0,
+      "profit_factor": 0,
+      "volatility": 0.0
+    }
+  },
+  "MACD": {
+    "name": "MACD",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0.0,
+      "total_trades": 0,
+      "win_rate": 0,
+      "profit_factor": 0,
+      "volatility": 0.0
+    }
+  },
+  "RSI": {
+    "name": "RSI",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0.0,
+      "total_trades": 0,
+      "win_rate": 0,
+      "profit_factor": 0,
+      "volatility": 0.0
+    }
+  },
+  "BollingerBands": {
+    "name": "BollingerBands",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0.0,
+      "total_trades": 0,
+      "win_rate": 0,
+      "profit_factor": 0,
+      "volatility": 0.0
+    }
+  },
+  "Momentum": {
+    "name": "Momentum",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0.0,
+      "total_trades": 0,
+      "win_rate": 0,
+      "profit_factor": 0,
+      "volatility": 0.0
+    }
+  },
+  "ROC": {
+    "name": "ROC",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.8640835431599801,
+      "annual_return": -0.9999965177863116,
+      "sharpe_ratio": 1.0223150385914046,
+      "max_drawdown": -0.9508997623880273,
+      "total_trades": 9,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "volatility": 4.173257795313962
+    }
+  },
+  "Stochastic": {
+    "name": "Stochastic",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.02602013473536502,
+      "annual_return": -0.15297841152689395,
+      "sharpe_ratio": -0.7366339180505848,
+      "max_drawdown": -0.04286605676786728,
+      "total_trades": 3,
+      "win_rate": 0.3333333333333333,
+      "profit_factor": 0.20152968193151768,
+      "volatility": 0.051279192171375235
+    }
+  },
+  "WilliamsR": {
+    "name": "WilliamsR",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": 0.022176142979957847,
+      "annual_return": 0.1481206545260052,
+      "sharpe_ratio": 0.009021187028187676,
+      "max_drawdown": -0.0646471132613452,
+      "total_trades": 3,
+      "win_rate": 0.3333333333333333,
+      "profit_factor": 1.601781430669941,
+      "volatility": 0.10012156433383226
+    }
+  },
+  "UltimateOscillator": {
+    "name": "UltimateOscillator",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.7882418338925219,
+      "annual_return": -0.9999431753760899,
+      "sharpe_ratio": 0.959283700266152,
+      "max_drawdown": -0.9525609743781984,
+      "total_trades": 10,
+      "win_rate": 0.1,
+      "profit_factor": 0.02846079004993403,
+      "volatility": 5.677984197703181
+    }
+  },
+  "VWAP": {
+    "name": "VWAP",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.9999995771407473,
+      "annual_return": -1.0,
+      "sharpe_ratio": 2.01109148936852,
+      "max_drawdown": -0.9999999584962955,
+      "total_trades": 4,
+      "win_rate": 0.25,
+      "profit_factor": 1.1253878001553594e-07,
+      "volatility": 23.939663356400374
+    }
+  },
+  "OBV": {
+    "name": "OBV",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.9999999999687688,
+      "annual_return": -1.0,
+      "sharpe_ratio": 2.3847954507408287,
+      "max_drawdown": -0.999999999995022,
+      "total_trades": 26,
+      "win_rate": 0.038461538461538464,
+      "profit_factor": 0.002408380293264549,
+      "volatility": 25.04913040903398
+    }
+  },
+  "AD": {
+    "name": "AD",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.9999999999608354,
+      "annual_return": -1.0,
+      "sharpe_ratio": -6.037966864258372,
+      "max_drawdown": -0.999999999967317,
+      "total_trades": 20,
+      "win_rate": 0.45,
+      "profit_factor": 2.217641544277553e-05,
+      "volatility": 2.221330565537345
+    }
+  },
+  "CMF": {
+    "name": "CMF",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0.0,
+      "total_trades": 0,
+      "win_rate": 0,
+      "profit_factor": 0,
+      "volatility": 0.0
+    }
+  },
+  "ATR": {
+    "name": "ATR",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.3447744979962808,
+      "annual_return": -0.9302190556478422,
+      "sharpe_ratio": 1.1731333551612864,
+      "max_drawdown": -0.7761708543719907,
+      "total_trades": 16,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "volatility": 3.7529268297479694
+    }
+  },
+  "BollingerSqueeze": {
+    "name": "BollingerSqueeze",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.9998232336978116,
+      "annual_return": -1.0,
+      "sharpe_ratio": -0.8352945350164295,
+      "max_drawdown": -1.0004354934980715,
+      "total_trades": 20,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "volatility": 19.68198031377608
+    }
+  },
+  "KeltnerChannel": {
+    "name": "KeltnerChannel",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.028096913924026357,
+      "annual_return": -0.16428794898833476,
+      "sharpe_ratio": -1.7302637903588407,
+      "max_drawdown": -0.028096913924026305,
+      "total_trades": 1,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "volatility": 0.02332602500561024
+    }
+  },
+  "HistoricalVolatility": {
+    "name": "HistoricalVolatility",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.9999999999806389,
+      "annual_return": -1.0,
+      "sharpe_ratio": -1.203641220212409,
+      "max_drawdown": -1.0392781905563218,
+      "total_trades": 23,
+      "win_rate": 0.08695652173913043,
+      "profit_factor": 0.027559657768647848,
+      "volatility": 46.151439081566274
+    }
+  },
+  "SupportResistance": {
+    "name": "SupportResistance",
+    "success": false,
+    "error": "__init__() got an unexpected keyword argument 'period'",
+    "metrics": {}
+  },
+  "PivotPoints": {
+    "name": "PivotPoints",
+    "success": false,
+    "error": "__init__() got an unexpected keyword argument 'period'",
+    "metrics": {}
+  },
+  "FibonacciRetracement": {
+    "name": "FibonacciRetracement",
+    "success": false,
+    "error": "__init__() got an unexpected keyword argument 'period'",
+    "metrics": {}
+  },
+  "DoubleTopBottom": {
+    "name": "DoubleTopBottom",
+    "success": false,
+    "error": "__init__() got an unexpected keyword argument 'period'",
+    "metrics": {}
+  },
+  "MTFTrendAnalysis": {
+    "name": "MTFTrendAnalysis",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0.0,
+      "total_trades": 0,
+      "win_rate": 0,
+      "profit_factor": 0,
+      "volatility": 0.0
+    }
+  },
+  "MTFRSI": {
+    "name": "MTFRSI",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.6911238745586503,
+      "annual_return": -0.9993877047779087,
+      "sharpe_ratio": -2.1567576342908272,
+      "max_drawdown": -1.3411734623366618,
+      "total_trades": 4,
+      "win_rate": 0.5,
+      "profit_factor": 2.145026585995232,
+      "volatility": 7.730661329064686
+    }
+  },
+  "MTFMACD": {
+    "name": "MTFMACD",
+    "success": true,
+    "error": null,
+    "metrics": {
+      "total_return": -0.9999999999750236,
+      "annual_return": -1.0,
+      "sharpe_ratio": -5.180611314144499,
+      "max_drawdown": -1.0789106458098714,
+      "total_trades": 27,
+      "win_rate": 0.037037037037037035,
+      "profit_factor": 8.716062317077326e-10,
+      "volatility": 13.625215883971041
+    }
+  }
+}

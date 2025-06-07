@@ -9,13 +9,13 @@ from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
 from typing import List, Dict, Any, Optional
 import logging
 
-from models import (
+from ..models import (
     OptimizationRequest, OptimizationResult, BatchOptimizationRequest,
     OptimizationStatus, BaseResponse, JobInfo, JobListResponse
 )
-from auth import verify_api_key, require_permission
-from services.optimization_service import optimization_service
-from job_manager import job_manager
+from ..auth import verify_api_key, require_permission
+from ..services.optimization_service import optimization_service
+from ..job_manager import job_manager
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

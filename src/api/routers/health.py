@@ -14,11 +14,11 @@ import time
 import os
 from datetime import datetime, timedelta
 
-from models import SystemHealth, SystemMetrics
-from middleware import request_timer
-from monitoring import get_health_checker, get_metrics_collector
-from monitoring.health import HealthStatus
-from monitoring.health_automation import get_health_automation
+from ..models import SystemHealth, SystemMetrics
+from ..middleware import request_timer
+from ..monitoring import get_health_checker, get_metrics_collector
+from ..monitoring.health import HealthStatus
+from ..monitoring.health_automation import get_health_automation
 
 logger = logging.getLogger(__name__)
 

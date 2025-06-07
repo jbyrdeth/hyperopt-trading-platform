@@ -10,11 +10,11 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import asyncio
 
-from models import (
+from ..models import (
     OptimizationRequest, OptimizationResult, OptimizationStatus, 
     BatchOptimizationRequest, JobInfo, PerformanceMetrics, Asset, TimeFrame
 )
-from job_manager import job_manager, JobPriority
+from ..job_manager import job_manager, JobPriority
 # from src.data.data_fetcher import DataFetcher
 
 logger = logging.getLogger(__name__)

@@ -6,8 +6,33 @@ import numpy as np
 import logging
 from dataclasses import dataclass
 
-from ...reporting.data_integration import DataIntegration
-from ...utils.database import DatabaseManager
+try:
+    import sys
+    import os
+    # Add the project root to the path
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    
+    from src.reporting.data_integration import DataIntegration
+except ImportError:
+    # Fallback - create a mock DataIntegration
+    class DataIntegration:
+        @staticmethod
+        def get_optimization_results(strategy_name: str = None, limit: int = 100):
+            return []
+        
+        @staticmethod
+        def get_strategy_performance_data(strategy_name: str):
+            return {}
+try:
+    from src.utils.database import DatabaseManager
+except ImportError:
+    # Fallback - create mock
+    class DatabaseManager:
+        @staticmethod
+        def get_connection():
+            return None
 
 logger = logging.getLogger(__name__)
 

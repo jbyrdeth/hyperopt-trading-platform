@@ -1,0 +1,54 @@
+{
+  "bull_market_champions": [
+    "MTFMACD",
+    "AD",
+    "OBV",
+    "VWAP",
+    "MTFRSI"
+  ],
+  "bear_market_defenders": [
+    "MTFMACD",
+    "VWAP",
+    "HistoricalVolatility",
+    "OBV",
+    "AD"
+  ],
+  "sideways_market_specialists": [
+    "MTFMACD",
+    "VWAP",
+    "HistoricalVolatility",
+    "MTFRSI",
+    "OBV"
+  ],
+  "volatility_masters": [
+    "AD",
+    "CMF",
+    "MTFMACD",
+    "OBV",
+    "HistoricalVolatility"
+  ],
+  "all_weather_performers": [
+    "CMF",
+    "MTFMACD",
+    "VWAP",
+    "AD",
+    "HistoricalVolatility",
+    "OBV",
+    "MTFRSI",
+    "UltimateOscillator"
+  ],
+  "high_frequency_traders": [
+    "CMF",
+    "HistoricalVolatility",
+    "MTFMACD",
+    "AD",
+    "VWAP"
+  ],
+  "risk_adjusted_leaders": [
+    "CMF",
+    "MTFMACD",
+    "VWAP",
+    "AD",
+    "HistoricalVolatility"
+  ]
+}

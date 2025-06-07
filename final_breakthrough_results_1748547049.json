@@ -1,0 +1,128 @@
+{
+  "timestamp": "2025-05-29T12:30:49.119825",
+  "market_return_pct": 94.83488624308261,
+  "data_period_days": 60,
+  "single_test": {
+    "success": true,
+    "total_return": -6703795.431564033,
+    "annual_return": NaN,
+    "total_trades": 31,
+    "sharpe_ratio": -0.6592168029533318,
+    "max_drawdown": -4.3230164472710575,
+    "win_rate": 0.8064516129032258,
+    "strategy_name": "MA_Crossover_EMA_3_8",
+    "params": {
+      "fast_period": 3,
+      "slow_period": 8,
+      "ma_type": "EMA",
+      "signal_threshold": 0.0005,
+      "position_size_pct": 1.0,
+      "stop_loss_pct": 0.05,
+      "take_profit_pct": 0.08
+    }
+  },
+  "multi_config_test": {
+    "configurations": [
+      {
+        "config_name": "Ultra_Fast",
+        "total_return": 1.3078445995096644e+20,
+        "annual_return": 3.428631972806115e+124,
+        "total_trades": 75,
+        "sharpe_ratio": 0.24985628111733843,
+        "max_drawdown": -3.677597489574935,
+        "win_rate": 0.5466666666666666,
+        "profit_factor": 35.10431986522148,
+        "params": {
+          "fast_period": 2,
+          "slow_period": 5,
+          "ma_type": "EMA",
+          "signal_threshold": 0.0005,
+          "position_size_pct": 1.0,
+          "stop_loss_pct": 0.03,
+          "take_profit_pct": 0.06
+        },
+        "success": true
+      },
+      {
+        "config_name": "Fast_Aggressive",
+        "total_return": -9306888768.228603,
+        "annual_return": NaN,
+        "total_trades": 42,
+        "sharpe_ratio": -0.8308007938348849,
+        "max_drawdown": -4.938837967737104,
+        "win_rate": 0.5476190476190477,
+        "profit_factor": 1.6358654988069974,
+        "params": {
+          "fast_period": 3,
+          "slow_period": 8,
+          "ma_type": "EMA",
+          "signal_threshold": 0.001,
+          "position_size_pct": 1.0,
+          "stop_loss_pct": 0.04,
+          "take_profit_pct": 0.08
+        },
+        "success": true
+      },
+      {
+        "config_name": "Balanced_Fast",
+        "total_return": -249749.28877195207,
+        "annual_return": NaN,
+        "total_trades": 28,
+        "sharpe_ratio": 0.3357402724756494,
+        "max_drawdown": -3.1020578661934746,
+        "win_rate": 0.39285714285714285,
+        "profit_factor": 10.374931431927058,
+        "params": {
+          "fast_period": 5,
+          "slow_period": 12,
+          "ma_type": "EMA",
+          "signal_threshold": 0.002,
+          "position_size_pct": 0.95,
+          "stop_loss_pct": 0.05,
+          "take_profit_pct": 0.1
+        },
+        "success": true
+      },
+      {
+        "config_name": "SMA_Fast",
+        "total_return": -858544662486.5598,
+        "annual_return": NaN,
+        "total_trades": 49,
+        "sharpe_ratio": 0.27536891871091423,
+        "max_drawdown": -16.147579288337166,
+        "win_rate": 0.4489795918367347,
+        "profit_factor": 1.516480990146078,
+        "params": {
+          "fast_period": 4,
+          "slow_period": 10,
+          "ma_type": "SMA",
+          "signal_threshold": 0.0005,
+          "position_size_pct": 1.0,
+          "stop_loss_pct": 0.04,
+          "take_profit_pct": 0.08
+        },
+        "success": true
+      },
+      {
+        "config_name": "WMA_Fast",
+        "total_return": 51506667.512153156,
+        "annual_return": 5.5164946502817845e+47,
+        "total_trades": 32,
+        "sharpe_ratio": -0.7689424996280325,
+        "max_drawdown": -9.602007194013295,
+        "win_rate": 0.59375,
+        "profit_factor": 3.4152197904237784,
+        "params": {
+          "fast_period": 3,
+          "slow_period": 9,
+          "ma_type": "WMA",
+          "signal_threshold": 0.001,
+          "position_size_pct": 1.0,
+          "stop_loss_pct": 0.045,
+          "take_profit_pct": 0.09
+        },
+        "success": true
+      }
+    ]
+  },
+  "breakthrough_achieved": 

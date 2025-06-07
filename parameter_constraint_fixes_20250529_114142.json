@@ -1,0 +1,700 @@
+{
+  "current_constraints": {
+    "MovingAverageCrossover": {
+      "fast_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{fast_period}\n2   randint\n3     Literal{46}",
+        "high": "0 Literal{5}"
+      },
+      "slow_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{slow_period}\n2   randint\n3     Literal{181}",
+        "high": "0 Literal{20}"
+      },
+      "ma_type": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{ma_type}\n2   randint\n3     Literal{4}",
+        "high": "0 Literal{SMA}"
+      }
+    },
+    "MACD": {
+      "fast_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{fast_period}\n2   randint\n3     Literal{13}",
+        "high": "0 Literal{8}"
+      },
+      "slow_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{slow_period}\n2   randint\n3     Literal{16}",
+        "high": "0 Literal{20}"
+      },
+      "signal_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{signal_period}\n2   randint\n3     Literal{11}",
+        "high": "0 Literal{5}"
+      }
+    },
+    "RSI": {
+      "rsi_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{rsi_period}\n2   randint\n3     Literal{46}",
+        "high": "0 Literal{5}"
+      },
+      "exit_signal": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{exit_signal}\n2   randint\n3     Literal{3}",
+        "high": "0 Literal{opposite}"
+      }
+    },
+    "BollingerBands": {
+      "period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{period}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "entry_method": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{entry_method}\n2   randint\n3     Literal{3}",
+        "high": "0 Literal{breakout}"
+      }
+    },
+    "Momentum": {
+      "period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{period}\n2   randint\n3     Literal{26}",
+        "high": "0 Literal{5}"
+      }
+    },
+    "ROC": {
+      "roc_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{roc_period}\n2   randint\n3     Literal{46}",
+        "high": "0 Literal{5}"
+      },
+      "persistence_bars": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{persistence_bars}\n2   randint\n3     Literal{10}",
+        "high": "0 Literal{1}"
+      },
+      "ma_smoothing": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{ma_smoothing}\n2   randint\n3     Literal{19}",
+        "high": "0 Literal{3}"
+      },
+      "divergence_lookback": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{divergence_lookback}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "trend_filter": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_filter}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      },
+      "trend_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_period}\n2   randint\n3     Literal{9}",
+        "high": "0 Literal{20}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "Stochastic": {
+      "k_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{k_period}\n2   randint\n3     Literal{26}",
+        "high": "0 Literal{5}"
+      },
+      "d_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{d_period}\n2   randint\n3     Literal{8}",
+        "high": "0 Literal{3}"
+      },
+      "overbought": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{overbought}\n2   randint\n3     Literal{21}",
+        "high": "0 Literal{70}"
+      },
+      "oversold": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{oversold}\n2   randint\n3     Literal{21}",
+        "high": "0 Literal{10}"
+      },
+      "trend_filter_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_filter_period}\n2   randint\n3     Literal{9}",
+        "high": "0 Literal{20}"
+      },
+      "divergence_lookback": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{divergence_lookback}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "adaptive_levels": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{adaptive_levels}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "WilliamsR": {
+      "wr_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{wr_period}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "trend_filter_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_filter_period}\n2   randint\n3     Literal{9}",
+        "high": "0 Literal{20}"
+      },
+      "failure_swing_bars": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{failure_swing_bars}\n2   randint\n3     Literal{13}",
+        "high": "0 Literal{3}"
+      },
+      "multi_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{multi_timeframe}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "UltimateOscillator": {
+      "short_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{short_period}\n2   randint\n3     Literal{11}",
+        "high": "0 Literal{5}"
+      },
+      "medium_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{medium_period}\n2   randint\n3     Literal{21}",
+        "high": "0 Literal{15}"
+      },
+      "long_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{long_period}\n2   randint\n3     Literal{26}",
+        "high": "0 Literal{25}"
+      },
+      "overbought": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{overbought}\n2   randint\n3     Literal{16}",
+        "high": "0 Literal{65}"
+      },
+      "oversold": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{oversold}\n2   randint\n3     Literal{16}",
+        "high": "0 Literal{20}"
+      },
+      "signal_threshold": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{signal_threshold}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{30}"
+      },
+      "trend_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_confirmation}\n2   randint\n3     Literal{9}",
+        "high": "0 Literal{20}"
+      },
+      "divergence_lookback": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{divergence_lookback}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "VWAP": {
+      "vwap_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{vwap_period}\n2   randint\n3     Literal{46}",
+        "high": "0 Literal{5}"
+      },
+      "trading_mode": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trading_mode}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{mean_reversion}"
+      }
+    },
+    "OBV": {
+      "obv_ma_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{obv_ma_period}\n2   randint\n3     Literal{46}",
+        "high": "0 Literal{5}"
+      },
+      "divergence_lookback": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{divergence_lookback}\n2   randint\n3     Literal{16}",
+        "high": "0 Literal{5}"
+      }
+    },
+    "AD": {
+      "ad_ma_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{ad_ma_period}\n2   randint\n3     Literal{46}",
+        "high": "0 Literal{5}"
+      },
+      "divergence_lookback": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{divergence_lookback}\n2   randint\n3     Literal{16}",
+        "high": "0 Literal{5}"
+      }
+    },
+    "CMF": {
+      "cmf_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{cmf_period}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "momentum_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{momentum_period}\n2   randint\n3     Literal{8}",
+        "high": "0 Literal{3}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "ATR": {
+      "atr_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{atr_period}\n2   randint\n3     Literal{26}",
+        "high": "0 Literal{5}"
+      },
+      "trend_filter": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_filter}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      },
+      "trend_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_period}\n2   randint\n3     Literal{9}",
+        "high": "0 Literal{20}"
+      }
+    },
+    "BollingerSqueeze": {
+      "bb_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{bb_period}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "kc_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{kc_period}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "breakout_bars": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{breakout_bars}\n2   randint\n3     Literal{5}",
+        "high": "0 Literal{1}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "KeltnerChannel": {
+      "kc_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{kc_period}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "trading_mode": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trading_mode}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{breakout}"
+      },
+      "channel_position": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{channel_position}\n2   randint\n3     Literal{3}",
+        "high": "0 Literal{upper}"
+      },
+      "trend_filter": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_filter}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      },
+      "trend_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_period}\n2   randint\n3     Literal{9}",
+        "high": "0 Literal{20}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "HistoricalVolatility": {
+      "volatility_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volatility_period}\n2   randint\n3     Literal{41}",
+        "high": "0 Literal{10}"
+      },
+      "regime_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{regime_period}\n2   randint\n3     Literal{10}",
+        "high": "0 Literal{30}"
+      },
+      "trend_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{trend_period}\n2   randint\n3     Literal{9}",
+        "high": "0 Literal{20}"
+      },
+      "momentum_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{momentum_period}\n2   randint\n3     Literal{16}",
+        "high": "0 Literal{5}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "SupportResistance": {},
+    "PivotPoints": {},
+    "FibonacciRetracement": {},
+    "DoubleTopBottom": {},
+    "MTFTrendAnalysis": {
+      "primary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{primary_timeframe}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{1H}"
+      },
+      "secondary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{secondary_timeframe}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{4H}"
+      },
+      "tertiary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{tertiary_timeframe}\n2   randint\n3     Literal{1}",
+        "high": "0 Literal{1D}"
+      },
+      "ma_period_short": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{ma_period_short}\n2   randint\n3     Literal{21}",
+        "high": "0 Literal{10}"
+      },
+      "ma_period_long": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{ma_period_long}\n2   randint\n3     Literal{8}",
+        "high": "0 Literal{30}"
+      },
+      "ma_type": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{ma_type}\n2   randint\n3     Literal{3}",
+        "high": "0 Literal{SMA}"
+      },
+      "signal_confirmation_bars": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{signal_confirmation_bars}\n2   randint\n3     Literal{5}",
+        "high": "0 Literal{1}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "MTFRSI": {
+      "primary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{primary_timeframe}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{1H}"
+      },
+      "secondary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{secondary_timeframe}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{4H}"
+      },
+      "tertiary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{tertiary_timeframe}\n2   randint\n3     Literal{1}",
+        "high": "0 Literal{1D}"
+      },
+      "rsi_period": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{rsi_period}\n2   randint\n3     Literal{16}",
+        "high": "0 Literal{10}"
+      },
+      "divergence_lookback": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{divergence_lookback}\n2   randint\n3     Literal{21}",
+        "high": "0 Literal{10}"
+      },
+      "signal_confirmation_bars": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{signal_confirmation_bars}\n2   randint\n3     Literal{5}",
+        "high": "0 Literal{1}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    },
+    "MTFMACD": {
+      "primary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{primary_timeframe}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{1H}"
+      },
+      "secondary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{secondary_timeframe}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{4H}"
+      },
+      "tertiary_timeframe": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{tertiary_timeframe}\n2   randint\n3     Literal{1}",
+        "high": "0 Literal{1D}"
+      },
+      "macd_fast": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{macd_fast}\n2   randint\n3     Literal{8}",
+        "high": "0 Literal{8}"
+      },
+      "macd_slow": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{macd_slow}\n2   randint\n3     Literal{16}",
+        "high": "0 Literal{20}"
+      },
+      "macd_signal": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{macd_signal}\n2   randint\n3     Literal{6}",
+        "high": "0 Literal{7}"
+      },
+      "divergence_lookback": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{divergence_lookback}\n2   randint\n3     Literal{21}",
+        "high": "0 Literal{10}"
+      },
+      "signal_confirmation_bars": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{signal_confirmation_bars}\n2   randint\n3     Literal{5}",
+        "high": "0 Literal{1}"
+      },
+      "volume_confirmation": {
+        "type": "hyperopt_uniform",
+        "low": "0 hyperopt_param\n1   Literal{volume_confirmation}\n2   randint\n3     Literal{2}",
+        "high": "0 Literal{True}"
+      }
+    }
+  },
+  "test_results": {
+    "MovingAverageCrossover": {
+      "Conservative (Current)": {
+        "parameters": {
+          "fast_period": 10,
+          "slow_period": 20,
+          "ma_type": "SMA",
+          "signal_threshold": 0.01,
+          "position_size_pct": 0.5,
+          "stop_loss_pct": 0.05,
+          "take_profit_pct": 0.1
+        },
+        "total_return_pct": 23.15587321278969,
+        "annual_return_pct": 88.42318787541876,
+        "total_trades": 15,
+        "win_rate_pct": 13.333333333333334,
+        "sharpe_ratio": 1.4661117730532067,
+        "max_drawdown_pct": -89.53309388312648,
+        "trades_per_month": 3.75
+      },
+      "Aggressive (More Signals)": {
+        "error": "Invalid strategy parameters"
+      },
+      "Very Aggressive": {
+        "error": "Invalid strategy parameters"
+      },
+      "Ultra Short-term": {
+        "error": "Invalid strategy parameters"
+      }
+    },
+    "RSI": {
+      "Conservative (Current)": {
+        "parameters": {
+          "period": 14,
+          "overbought": 70,
+          "oversold": 30,
+          "exit_strategy": "opposite",
+          "position_size_pct": 0.5,
+          "stop_loss_pct": 0.05,
+          "take_profit_pct": 0.1
+        },
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": 0,
+        "max_drawdown_pct": 0.0,
+        "trades_per_month": 0.0
+      },
+      "Aggressive (More Signals)": {
+        "parameters": {
+          "period": 7,
+          "overbought": 65,
+          "oversold": 35,
+          "exit_strategy": "opposite",
+          "position_size_pct": 0.8,
+          "stop_loss_pct": 0.03,
+          "take_profit_pct": 0.06
+        },
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": 0,
+        "max_drawdown_pct": 0.0,
+        "trades_per_month": 0.0
+      },
+      "Very Aggressive": {
+        "parameters": {
+          "period": 5,
+          "overbought": 60,
+          "oversold": 40,
+          "exit_strategy": "opposite",
+          "position_size_pct": 0.8,
+          "stop_loss_pct": 0.025,
+          "take_profit_pct": 0.05
+        },
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": 0,
+        "max_drawdown_pct": 0.0,
+        "trades_per_month": 0.0
+      }
+    },
+    "MACD": {
+      "Conservative (Current)": {
+        "parameters": {
+          "fast_period": 12,
+          "slow_period": 26,
+          "signal_period": 9,
+          "signal_threshold": 0.01,
+          "position_size_pct": 0.5,
+          "stop_loss_pct": 0.05,
+          "take_profit_pct": 0.1
+        },
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": 0,
+        "max_drawdown_pct": 0.0,
+        "trades_per_month": 0.0
+      },
+      "Aggressive (More Signals)": {
+        "error": "Invalid strategy parameters"
+      },
+      "Very Aggressive": {
+        "error": "Invalid strategy parameters"
+      }
+    },
+    "WilliamsR": {
+      "Conservative (Current)": {
+        "parameters": {
+          "period": 14,
+          "overbought": -20,
+          "oversold": -80,
+          "position_size_pct": 0.5,
+          "stop_loss_pct": 0.05,
+          "take_profit_pct": 0.1
+        },
+        "total_return_pct": 4.8430237894226735,
+        "annual_return_pct": 15.471399130765718,
+        "total_trades": 9,
+        "win_rate_pct": 44.44444444444444,
+        "sharpe_ratio": 0.4709966876936201,
+        "max_drawdown_pct": -82.3422050793658,
+        "trades_per_month": 2.25
+      },
+      "Aggressive (More Signals)": {
+        "parameters": {
+          "period": 7,
+          "overbought": -15,
+          "oversold": -85,
+          "position_size_pct": 0.8,
+          "stop_loss_pct": 0.03,
+          "take_profit_pct": 0.06
+        },
+        "total_return_pct": 25.10301692893777,
+        "annual_return_pct": 97.63150300933594,
+        "total_trades": 9,
+        "win_rate_pct": 55.55555555555556,
+        "sharpe_ratio": -0.7090162997138222,
+        "max_drawdown_pct": -129.5738059673443,
+        "trades_per_month": 2.25
+      }
+    },
+    "BollingerBands": {
+      "Conservative (Current)": {
+        "parameters": {
+          "period": 20,
+          "std_dev": 2.0,
+          "strategy_type": "breakout",
+          "position_size_pct": 0.5,
+          "stop_loss_pct": 0.05,
+          "take_profit_pct": 0.1
+        },
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": 0,
+        "max_drawdown_pct": 0.0,
+        "trades_per_month": 0.0
+      },
+      "Aggressive (More Signals)": {
+        "parameters": {
+          "period": 10,
+          "std_dev": 1.5,
+          "strategy_type": "breakout",
+          "position_size_pct": 0.8,
+          "stop_loss_pct": 0.03,
+          "take_profit_pct": 0.06
+        },
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": 0,
+        "max_drawdown_pct": 0.0,
+        "trades_per_month": 0.0
+      }
+    }
+  },
+  "constraint_proposals": {
+    "MovingAverageCrossover": {
+      "fast_period": {
+        "current_min": 5,
+        "current_max": 50,
+        "proposed_min": 10,
+        "proposed_max": 50
+      },
+      "slow_period": {
+        "current_min": 20,
+        "current_max": 200,
+        "proposed_min": 20,
+        "proposed_max": 200
+      }
+    }
+  },
+  "timestamp": "20250529_114142"
+}

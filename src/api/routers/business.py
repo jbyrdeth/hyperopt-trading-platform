@@ -8,11 +8,11 @@ import numpy as np
 from ..models import BusinessMetrics, ROICalculation, ExecutiveSummary, StrategyComparison
 from ..services.business_service import BusinessService
 from ..services.roi_calculator import ROICalculator
-from ..auth import get_current_user, verify_premium_access
+from ..auth import verify_api_key, require_permission
 import logging
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/business", tags=["business"])
+router = APIRouter(tags=["business"])
 
 class ROIRequest(BaseModel):
     strategy_ids: List[str]
@@ -38,7 +38,7 @@ class ReportExportRequest(BaseModel):
 @router.get("/dashboard/executive", response_model=Dict[str, Any])
 async def get_executive_dashboard(
     date_range: str = Query("30d", description="Time range: 7d, 30d, 90d, 1y, all"),
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Get executive dashboard with key business metrics and KPIs.
@@ -48,14 +48,14 @@ async def get_executive_dashboard(
         business_service = BusinessService()
         dashboard_data = await business_service.get_executive_dashboard(
             date_range=date_range,
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         return {
             "success": True,
             "data": dashboard_data,
             "generated_at": datetime.utcnow().isoformat(),
-            "user_role": current_user.role
+            "api_key": api_key_info.get("name", "unknown")
         }
     except Exception as e:
         logger.error(f"Executive dashboard error: {str(e)}")
@@ -64,7 +64,7 @@ async def get_executive_dashboard(
 @router.post("/roi/calculate", response_model=Dict[str, Any])
 async def calculate_roi(
     request: ROIRequest,
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Calculate ROI for selected strategies using various methodologies.
@@ -79,7 +79,7 @@ async def calculate_roi(
             benchmark=request.benchmark,
             include_fees=request.include_fees,
             risk_free_rate=request.risk_free_rate,
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         return {
@@ -100,7 +100,7 @@ async def calculate_roi(
 
 @router.get("/metrics/realtime", response_model=Dict[str, Any])
 async def get_realtime_business_metrics(
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Get real-time business metrics including active optimizations,
@@ -109,7 +109,7 @@ async def get_realtime_business_metrics(
     try:
         business_service = BusinessService()
         realtime_metrics = await business_service.get_realtime_metrics(
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         return {
@@ -127,7 +127,7 @@ async def compare_strategies(
     strategy_ids: List[str],
     metrics: List[str] = Query(["roi", "sharpe", "max_drawdown", "volatility"]),
     date_range: str = Query("90d"),
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Compare multiple strategies across key business metrics.
@@ -139,7 +139,7 @@ async def compare_strategies(
             strategy_ids=strategy_ids,
             metrics=metrics,
             date_range=date_range,
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         return {
@@ -158,7 +158,7 @@ async def compare_strategies(
 async def export_business_report(
     request: ReportExportRequest,
     background_tasks: BackgroundTasks,
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Export business reports in various formats (PDF, Excel, CSV).
@@ -174,7 +174,7 @@ async def export_business_report(
             date_range=request.date_range,
             strategy_ids=request.strategy_ids,
             include_charts=request.include_charts,
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         return {
@@ -192,7 +192,7 @@ async def export_business_report(
 @router.get("/reports/download/{report_id}")
 async def download_report(
     report_id: str,
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Download generated business report by ID.
@@ -201,7 +201,7 @@ async def download_report(
         business_service = BusinessService()
         report_path = await business_service.get_report_path(
             report_id=report_id,
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         if not report_path:
@@ -221,7 +221,7 @@ async def get_business_trends(
     metric: str = Query("roi", description="Metric to trend: roi, trades, profit, drawdown"),
     period: str = Query("daily", description="Trend period: hourly, daily, weekly, monthly"),
     duration: str = Query("30d", description="Duration: 7d, 30d, 90d, 1y"),
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Get business trend analysis for key metrics over time.
@@ -233,7 +233,7 @@ async def get_business_trends(
             metric=metric,
             period=period,
             duration=duration,
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         return {
@@ -251,7 +251,7 @@ async def get_business_trends(
 @router.get("/portfolio/summary", response_model=Dict[str, Any])
 async def get_portfolio_summary(
     include_inactive: bool = Query(False),
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Get comprehensive portfolio summary for business reporting.
@@ -260,7 +260,7 @@ async def get_portfolio_summary(
     try:
         business_service = BusinessService()
         portfolio_summary = await business_service.get_portfolio_summary(
-            user_id=current_user.id,
+            user_id=api_key_info.get("name", "api_user"),
             include_inactive=include_inactive
         )
         
@@ -280,7 +280,7 @@ async def setup_business_alerts(
     threshold: float,
     condition: str,  # above, below, equals
     notification_method: str = "email",  # email, slack, webhook
-    current_user = Depends(verify_premium_access)
+    api_key_info: Dict = Depends(require_permission("write"))
 ):
     """
     Set up business metric alerts for proactive monitoring.
@@ -293,7 +293,7 @@ async def setup_business_alerts(
             threshold=threshold,
             condition=condition,
             notification_method=notification_method,
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         return {
@@ -314,7 +314,7 @@ async def get_benchmark_comparison(
     benchmark: str = Query("spy", description="Benchmark: spy, nasdaq, custom"),
     strategies: Optional[List[str]] = Query(None),
     date_range: str = Query("90d"),
-    current_user = Depends(get_current_user)
+    api_key_info: Dict = Depends(require_permission("read"))
 ):
     """
     Compare platform performance against market benchmarks.
@@ -326,7 +326,7 @@ async def get_benchmark_comparison(
             benchmark=benchmark,
             strategies=strategies,
             date_range=date_range,
-            user_id=current_user.id
+            user_id=api_key_info.get("name", "api_user")
         )
         
         return {

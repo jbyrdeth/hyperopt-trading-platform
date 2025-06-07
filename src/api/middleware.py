@@ -14,11 +14,11 @@ from datetime import datetime, timedelta
 
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse, Response
-from auth import (
+from .auth import (
     verify_api_key, get_api_key_info, check_rate_limit, 
     get_client_ip, add_security_headers, RequestLogger
 )
-from models import ErrorResponse
+from .models import ErrorResponse
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +161,7 @@ async def logging_middleware(request: Request, call_next):
         )
 
 
-async def error_handler(request: Request, exc: Exception):
+async def error_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Global error handler for unhandled exceptions.
     

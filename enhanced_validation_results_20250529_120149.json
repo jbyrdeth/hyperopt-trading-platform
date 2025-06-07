@@ -1,0 +1,179 @@
+{
+  "validation_timestamp": "20250529_120149",
+  "test_period_days": 60.0,
+  "market_return_pct": 57.98384996381907,
+  "total_strategies": 24,
+  "successful_strategies": 0,
+  "success_rate_pct": 0.0,
+  "results": [
+    {
+      "strategy_name": "MovingAverageCrossover",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "MACD",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "RSI",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "BollingerBands",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "Momentum",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "ROC",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "Stochastic",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "WilliamsR",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "UltimateOscillator",
+      "status": "failed",
+      "error": "Strategy creation failed",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "VWAP",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "OBV",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "AD",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "CMF",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "ATR",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "BollingerSqueeze",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "KeltnerChannel",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "HistoricalVolatility",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "SupportResistance",
+      "status": "failed",
+      "error": "'int' object has no attribute 'total_seconds'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "PivotPoints",
+      "status": "failed",
+      "error": "Only valid with DatetimeIndex, TimedeltaIndex or PeriodIndex, but got an instance of 'RangeIndex'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "FibonacciRetracement",
+      "status": "failed",
+      "error": "'int' object has no attribute 'total_seconds'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "DoubleTopBottom",
+      "status": "failed",
+      "error": "'int' object has no attribute 'total_seconds'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "MTFTrendAnalysis",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "MTFRSI",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    },
+    {
+      "strategy_name": "MTFMACD",
+      "status": "failed",
+      "error": "'numpy.int64' object has no attribute 'days'",
+      "trades": 0,
+      "return": 0.0
+    }
+  ],
+  "top_performers": []
+}

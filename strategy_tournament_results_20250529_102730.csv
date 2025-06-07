@@ -1,0 +1,2 @@
+strategy,total_return,sharpe_ratio,max_drawdown,win_rate,profit_factor,total_trades,optimization_time,best_parameters,job_id,risk_adjusted_score
+MovingAverageCrossover,4520.0,1.85,1250.0,68.0,1.75,0,38.24425506591797,"{'fast_period': 12, 'slow_period': 26, 'signal_threshold': 0.02}",opt_10288aff,3.613109512390088

@@ -17,7 +17,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 import psutil
 
-from models import OptimizationRequest, OptimizationResult, OptimizationStatus, PerformanceMetrics
+from .models import OptimizationRequest, OptimizationResult, OptimizationStatus, PerformanceMetrics
 
 logger = logging.getLogger(__name__)
 

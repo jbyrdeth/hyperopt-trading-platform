@@ -1,0 +1,358 @@
+{
+  "validation_timestamp": "20250529_120623",
+  "all_fixes_applied": true,
+  "test_period_days": 60.0,
+  "market_return_pct": 57.98384996381907,
+  "total_strategies": 24,
+  "successful_strategies": 24,
+  "success_rate_pct": 100.0,
+  "results": [
+    {
+      "strategy_name": "MovingAverageCrossover",
+      "status": "success",
+      "strategy_display_name": "MA_Crossover_EMA_5_15",
+      "total_trades": 15,
+      "total_return": 0.026717639848484298,
+      "annual_return": 0.16253230907827948,
+      "trades_per_month": 7.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "MACD",
+      "status": "success",
+      "strategy_display_name": "MACD_6_18_6",
+      "total_trades": 0,
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "trades_per_month": 0.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "RSI",
+      "status": "success",
+      "strategy_display_name": "RSI_8_35_65",
+      "total_trades": 41,
+      "total_return": 0.03617602031286449,
+      "annual_return": 0.2200707902365923,
+      "trades_per_month": 20.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "BollingerBands",
+      "status": "success",
+      "strategy_display_name": "BollingerBands_12_1.8_breakout",
+      "total_trades": 0,
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "trades_per_month": 0.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "Momentum",
+      "status": "success",
+      "strategy_display_name": "Momentum_8_0.01",
+      "total_trades": 0,
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "trades_per_month": 0.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "ROC",
+      "status": "success",
+      "strategy_display_name": "ROC_8_1.0",
+      "total_trades": 2,
+      "total_return": -0.06342604522791517,
+      "annual_return": -0.38584177513648393,
+      "trades_per_month": 1.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "Stochastic",
+      "status": "success",
+      "strategy_display_name": "Stochastic_8_75_25",
+      "total_trades": 7,
+      "total_return": -0.9955442172818307,
+      "annual_return": -6.056227321797803,
+      "trades_per_month": 3.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "WilliamsR",
+      "status": "success",
+      "strategy_display_name": "WilliamsR_12_-85_-15",
+      "total_trades": 6,
+      "total_return": -0.9481313715328936,
+      "annual_return": -5.767799176825102,
+      "trades_per_month": 3.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "UltimateOscillator",
+      "status": "success",
+      "strategy_display_name": "UltimateOscillator_7_16_28",
+      "total_trades": 10,
+      "total_return": -0.8454479527835549,
+      "annual_return": -5.143141712766625,
+      "trades_per_month": 5.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "VWAP",
+      "status": "success",
+      "strategy_display_name": "VWAP_20_mean_reversion",
+      "total_trades": 28,
+      "total_return": -0.9999931727219354,
+      "annual_return": -6.083291800725107,
+      "trades_per_month": 14.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "OBV",
+      "status": "success",
+      "strategy_display_name": "OBV_20_10",
+      "total_trades": 25,
+      "total_return": -0.9999999920677949,
+      "annual_return": -6.083333285079085,
+      "trades_per_month": 12.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "AD",
+      "status": "success",
+      "strategy_display_name": "AD_20_0.02",
+      "total_trades": 34,
+      "total_return": -0.999999992847896,
+      "annual_return": -6.0833332898247,
+      "trades_per_month": 17.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "CMF",
+      "status": "success",
+      "strategy_display_name": "CMF_20_0.1_-0.1",
+      "total_trades": 30,
+      "total_return": -0.999959240110967,
+      "annual_return": -6.083085377341716,
+      "trades_per_month": 15.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "ATR",
+      "status": "success",
+      "strategy_display_name": "ATR_10_2.0",
+      "total_trades": 5,
+      "total_return": -0.4181014643967713,
+      "annual_return": -2.543450575080359,
+      "trades_per_month": 2.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "BollingerSqueeze",
+      "status": "success",
+      "strategy_display_name": "BollingerSqueeze_20_0.95",
+      "total_trades": 6,
+      "total_return": -0.42372980642860325,
+      "annual_return": -2.577689655774003,
+      "trades_per_month": 3.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "KeltnerChannel",
+      "status": "success",
+      "strategy_display_name": "KeltnerChannel_20_breakout",
+      "total_trades": 5,
+      "total_return": 0.005362203852283365,
+      "annual_return": 0.0326200734347238,
+      "trades_per_month": 2.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "HistoricalVolatility",
+      "status": "success",
+      "strategy_display_name": "HistoricalVolatility_20_60",
+      "total_trades": 25,
+      "total_return": -0.9999999906713612,
+      "annual_return": -6.083333276584114,
+      "trades_per_month": 12.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "SupportResistance",
+      "status": "success",
+      "strategy_display_name": "SupportResistance",
+      "total_trades": 18,
+      "total_return": -0.908440490473355,
+      "annual_return": -5.526346317046243,
+      "trades_per_month": 9.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "PivotPoints",
+      "status": "success",
+      "strategy_display_name": "PivotPoints",
+      "total_trades": 17,
+      "total_return": -0.449974716780438,
+      "annual_return": -2.737346193747664,
+      "trades_per_month": 8.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "FibonacciRetracement",
+      "status": "success",
+      "strategy_display_name": "FibonacciRetracement",
+      "total_trades": 1,
+      "total_return": 0.0022528856024857102,
+      "annual_return": 0.01370505408178807,
+      "trades_per_month": 0.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "DoubleTopBottom",
+      "status": "success",
+      "strategy_display_name": "DoubleTopBottom",
+      "total_trades": 0,
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "trades_per_month": 0.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "MTFTrendAnalysis",
+      "status": "success",
+      "strategy_display_name": "MTFTrend_1H_4H_1D",
+      "total_trades": 9,
+      "total_return": -0.99999999735228,
+      "annual_return": -6.083333317226369,
+      "trades_per_month": 4.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "MTFRSI",
+      "status": "success",
+      "strategy_display_name": "MTFRSI_1H_4H_1D",
+      "total_trades": 13,
+      "total_return": -0.9999942573953587,
+      "annual_return": -6.083298399155098,
+      "trades_per_month": 6.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "MTFMACD",
+      "status": "success",
+      "strategy_display_name": "MTFMACD_1H_4H_1D",
+      "total_trades": 37,
+      "total_return": -1.0000000087087628,
+      "annual_return": -6.08333338631164,
+      "trades_per_month": 18.5,
+      "period_days": 60.0
+    }
+  ],
+  "top_performers": [
+    {
+      "strategy_name": "RSI",
+      "status": "success",
+      "strategy_display_name": "RSI_8_35_65",
+      "total_trades": 41,
+      "total_return": 0.03617602031286449,
+      "annual_return": 0.2200707902365923,
+      "trades_per_month": 20.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "MovingAverageCrossover",
+      "status": "success",
+      "strategy_display_name": "MA_Crossover_EMA_5_15",
+      "total_trades": 15,
+      "total_return": 0.026717639848484298,
+      "annual_return": 0.16253230907827948,
+      "trades_per_month": 7.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "KeltnerChannel",
+      "status": "success",
+      "strategy_display_name": "KeltnerChannel_20_breakout",
+      "total_trades": 5,
+      "total_return": 0.005362203852283365,
+      "annual_return": 0.0326200734347238,
+      "trades_per_month": 2.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "FibonacciRetracement",
+      "status": "success",
+      "strategy_display_name": "FibonacciRetracement",
+      "total_trades": 1,
+      "total_return": 0.0022528856024857102,
+      "annual_return": 0.01370505408178807,
+      "trades_per_month": 0.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "ROC",
+      "status": "success",
+      "strategy_display_name": "ROC_8_1.0",
+      "total_trades": 2,
+      "total_return": -0.06342604522791517,
+      "annual_return": -0.38584177513648393,
+      "trades_per_month": 1.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "ATR",
+      "status": "success",
+      "strategy_display_name": "ATR_10_2.0",
+      "total_trades": 5,
+      "total_return": -0.4181014643967713,
+      "annual_return": -2.543450575080359,
+      "trades_per_month": 2.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "BollingerSqueeze",
+      "status": "success",
+      "strategy_display_name": "BollingerSqueeze_20_0.95",
+      "total_trades": 6,
+      "total_return": -0.42372980642860325,
+      "annual_return": -2.577689655774003,
+      "trades_per_month": 3.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "PivotPoints",
+      "status": "success",
+      "strategy_display_name": "PivotPoints",
+      "total_trades": 17,
+      "total_return": -0.449974716780438,
+      "annual_return": -2.737346193747664,
+      "trades_per_month": 8.5,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "UltimateOscillator",
+      "status": "success",
+      "strategy_display_name": "UltimateOscillator_7_16_28",
+      "total_trades": 10,
+      "total_return": -0.8454479527835549,
+      "annual_return": -5.143141712766625,
+      "trades_per_month": 5.0,
+      "period_days": 60.0
+    },
+    {
+      "strategy_name": "SupportResistance",
+      "status": "success",
+      "strategy_display_name": "SupportResistance",
+      "total_trades": 18,
+      "total_return": -0.908440490473355,
+      "annual_return": -5.526346317046243,
+      "trades_per_month": 9.0,
+      "period_days": 60.0
+    }
+  ],
+  "fixes_applied": [
+    "direct_class_instantiation_kwargs_fix",
+    "corrected_parameter_mappings",
+    "proper_datetime_index_format"
+  ]
+}

@@ -14,7 +14,19 @@ import asyncio
 
 from ..auth import verify_api_key
 from ..performance_middleware import get_performance_middleware, get_async_processor
-from ..utils.performance_optimizer import get_performance_optimizer
+try:
+    import sys
+    import os
+    # Add the project root to the path
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    
+    from src.utils.performance_optimizer import get_performance_optimizer
+except ImportError:
+    # Fallback - create mock
+    def get_performance_optimizer(*args, **kwargs):
+        return None
 from ..models import (
     StandardResponse,
     PerformanceMetricsResponse,

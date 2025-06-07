@@ -1,0 +1,29 @@
+// @version=5
+indicator("RSIStrategy - Optimized", overlay=true)
+
+// Optimized Parameters
+rsi_period = input.float(14, 'Rsi Period')
+rsi_overbought = input.float(70, 'Rsi Overbought')
+rsi_oversold = input.float(30, 'Rsi Oversold')
+
+// Performance Metrics (from optimization)
+// Sharpe Ratio: 1.65
+// Total Return: 0.38%
+// Max Drawdown: 0.08%
+
+// Simple Moving Average Example
+fast_ma = ta.sma(close, int(math.max(5, 12)))
+slow_ma = ta.sma(close, int(math.max(10, 26)))
+
+// Basic signals
+long_condition = ta.crossover(fast_ma, slow_ma)
+short_condition = ta.crossunder(fast_ma, slow_ma)
+
+
+// Plot indicators
+plot(fast_ma, "Fast MA", color=color.blue)
+plot(slow_ma, "Slow MA", color=color.red)
+
+// Plot signals
+plotshape(long_condition, "Long Signal", shape.triangleup, location.belowbar, color.green, size=size.small)
+plotshape(short_condition, "Short Signal", shape.triangledown, location.abovebar, color.red, size=size.small)

@@ -1,0 +1,23 @@
+{
+  "simple_strategy": {
+    "error": "Invalid strategy parameters"
+  },
+  "signal_analysis": {
+    "buy_signals": 135,
+    "sell_signals": 136,
+    "total_signals": 271,
+    "signal_frequency_pct": 37.638888888888886
+  },
+  "parameter_sensitivity": {
+    "results": [],
+    "profitable_count": 0
+  },
+  "engine_investigation": {
+    "error": "'BacktestingEngine' object has no attribute 'backtest'"
+  },
+  "summary": {
+    "market_return_pct": 29.300799007651325,
+    "data_points": 720,
+    "investigation_complete": true
+  }
+}

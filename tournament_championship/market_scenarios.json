@@ -1,0 +1,38 @@
+{
+  "mega_bull": {
+    "description": "Extended bull market (300% gain)",
+    "actual_return": 999.3494252474972,
+    "volatility": 1.8945784314219445,
+    "duration_days": 180
+  },
+  "crypto_winter": {
+    "description": "Severe bear market (-80% crash)",
+    "actual_return": -0.9999942456839668,
+    "volatility": 3.7991487891913627,
+    "duration_days": 120
+  },
+  "sideways_grind": {
+    "description": "Extended sideways market (choppy)",
+    "actual_return": -0.6901693102623474,
+    "volatility": 1.6693649482307302,
+    "duration_days": 200
+  },
+  "black_swan": {
+    "description": "High volatility crisis period",
+    "actual_return": -0.999983323076963,
+    "volatility": 7.799777675177518,
+    "duration_days": 60
+  },
+  "recovery_boom": {
+    "description": "Post-crash recovery rally",
+    "actual_return": 139.5606182687232,
+    "volatility": 3.328996277805573,
+    "duration_days": 90
+  },
+  "accumulation": {
+    "description": "Low volatility accumulation phase",
+    "actual_return": 15.674014280796001,
+    "volatility": 1.1357089095295996,
+    "duration_days": 150
+  }
+}

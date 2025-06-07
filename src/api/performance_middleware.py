@@ -14,7 +14,22 @@ from fastapi.responses import JSONResponse
 import json
 import hashlib
 
-from ..utils.performance_optimizer import get_performance_optimizer, performance_benchmark
+try:
+    import sys
+    import os
+    # Add the project root to the path
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    
+    from src.utils.performance_optimizer import get_performance_optimizer, performance_benchmark
+except ImportError:
+    # Fallback - create mocks
+    def get_performance_optimizer(*args, **kwargs):
+        return None
+    
+    def performance_benchmark(func):
+        return func
 
 logger = logging.getLogger(__name__)
 

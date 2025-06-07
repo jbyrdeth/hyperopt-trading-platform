@@ -1,0 +1,345 @@
+{
+  "tiers": {
+    "hall_of_fame": [
+      {
+        "strategy": "MTFMACD",
+        "composite_score": 0.5439262978094267,
+        "avg_return": -0.9810225511753492,
+        "consistency": 0.9690555011983378,
+        "avg_sharpe": -0.7869567935781242,
+        "avg_calmar": -1.0682802221492267,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "HistoricalVolatility",
+        "composite_score": 0.5359609000315408,
+        "avg_return": -0.9442681413861441,
+        "consistency": 0.9292009168292236,
+        "avg_sharpe": -0.5915168992404828,
+        "avg_calmar": -1.2073025525049264,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "MTFRSI",
+        "composite_score": 0.43746662398005143,
+        "avg_return": 216.50157868189044,
+        "consistency": -1.1194704701461045,
+        "avg_sharpe": -0.27437453988790733,
+        "avg_calmar": 509.4765773109718,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      }
+    ],
+    "champions": [
+      {
+        "strategy": "MTFMACD",
+        "composite_score": 0.5439262978094267,
+        "avg_return": -0.9810225511753492,
+        "consistency": 0.9690555011983378,
+        "avg_sharpe": -0.7869567935781242,
+        "avg_calmar": -1.0682802221492267,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "HistoricalVolatility",
+        "composite_score": 0.5359609000315408,
+        "avg_return": -0.9442681413861441,
+        "consistency": 0.9292009168292236,
+        "avg_sharpe": -0.5915168992404828,
+        "avg_calmar": -1.2073025525049264,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "MTFRSI",
+        "composite_score": 0.43746662398005143,
+        "avg_return": 216.50157868189044,
+        "consistency": -1.1194704701461045,
+        "avg_sharpe": -0.27437453988790733,
+        "avg_calmar": 509.4765773109718,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "ATR",
+        "composite_score": 0.42953714591040115,
+        "avg_return": -0.3310301268768178,
+        "consistency": 0.3962770312355576,
+        "avg_sharpe": -0.6824017252158088,
+        "avg_calmar": -1.8464827779116344,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "ROC",
+        "composite_score": 0.3518140558010209,
+        "avg_return": 2.370542397274818,
+        "consistency": -1.793811700376195,
+        "avg_sharpe": -0.33474855972623313,
+        "avg_calmar": 15.39688333275101,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      }
+    ],
+    "contenders": [
+      {
+        "strategy": "MTFMACD",
+        "composite_score": 0.5439262978094267,
+        "avg_return": -0.9810225511753492,
+        "consistency": 0.9690555011983378,
+        "avg_sharpe": -0.7869567935781242,
+        "avg_calmar": -1.0682802221492267,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "HistoricalVolatility",
+        "composite_score": 0.5359609000315408,
+        "avg_return": -0.9442681413861441,
+        "consistency": 0.9292009168292236,
+        "avg_sharpe": -0.5915168992404828,
+        "avg_calmar": -1.2073025525049264,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "MTFRSI",
+        "composite_score": 0.43746662398005143,
+        "avg_return": 216.50157868189044,
+        "consistency": -1.1194704701461045,
+        "avg_sharpe": -0.27437453988790733,
+        "avg_calmar": 509.4765773109718,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "ATR",
+        "composite_score": 0.42953714591040115,
+        "avg_return": -0.3310301268768178,
+        "consistency": 0.3962770312355576,
+        "avg_sharpe": -0.6824017252158088,
+        "avg_calmar": -1.8464827779116344,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "ROC",
+        "composite_score": 0.3518140558010209,
+        "avg_return": 2.370542397274818,
+        "consistency": -1.793811700376195,
+        "avg_sharpe": -0.33474855972623313,
+        "avg_calmar": 15.39688333275101,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "OBV",
+        "composite_score": 0.351098231035056,
+        "avg_return": 1.656821890453619,
+        "consistency": -2.3646731058843296,
+        "avg_sharpe": -0.2843209040068964,
+        "avg_calmar": 3.260614586878115,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "VWAP",
+        "composite_score": 0.3510217396941425,
+        "avg_return": 1.32357490756806,
+        "consistency": -1.4284796791481922,
+        "avg_sharpe": -0.30418597081180904,
+        "avg_calmar": 3.876378993094034,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "CMF",
+        "composite_score": 0.35047293828741544,
+        "avg_return": -0.04637125566388611,
+        "consistency": -5.526946476582587,
+        "avg_sharpe": -0.54288868970328,
+        "avg_calmar": 0.6953700074164234,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "Stochastic",
+        "composite_score": 0.3504643503480901,
+        "avg_return": -0.03641947413237003,
+        "consistency": -13.685412600918141,
+        "avg_sharpe": -0.39727481893405875,
+        "avg_calmar": 0.4119711098413484,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "RSI",
+        "composite_score": 0.35046020832183145,
+        "avg_return": -0.08565579528796519,
+        "consistency": -5.22381292707945,
+        "avg_sharpe": -0.5033848080347302,
+        "avg_calmar": 0.677458113408103,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      }
+    ],
+    "benchmarks": [
+      {
+        "strategy": "MovingAverageCrossover",
+        "composite_score": 0.35040919968338946,
+        "avg_return": -0.1756943714868501,
+        "consistency": -2.097607743642866,
+        "avg_sharpe": -0.2946598820193113,
+        "avg_calmar": 0.10424752864865124,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "WilliamsR",
+        "composite_score": 0.3503795152763153,
+        "avg_return": -0.18364098818760496,
+        "consistency": -0.6222223926197405,
+        "avg_sharpe": -0.2899216284765331,
+        "avg_calmar": -0.5601666284222308,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "KeltnerChannel",
+        "composite_score": 0.3503773576962602,
+        "avg_return": -0.22472401702886713,
+        "consistency": -1.628655874159008,
+        "avg_sharpe": -0.47703316336969986,
+        "avg_calmar": -0.30699085164491513,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "BollingerSqueeze",
+        "composite_score": 0.35033444178476336,
+        "avg_return": -0.3246598167496721,
+        "consistency": -0.7488677225735554,
+        "avg_sharpe": -0.42940963296039797,
+        "avg_calmar": -0.6092794082044571,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "UltimateOscillator",
+        "composite_score": 0.3502898075227784,
+        "avg_return": -0.4519237287995865,
+        "consistency": -0.1445668424338744,
+        "avg_sharpe": -0.31439813664503163,
+        "avg_calmar": -0.7500590653089915,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "MTFTrendAnalysis",
+        "composite_score": 0.3502794781512255,
+        "avg_return": -0.4487167939744538,
+        "consistency": -0.20718737457470948,
+        "avg_sharpe": -0.3802683065216901,
+        "avg_calmar": -1.0257058407096111,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "AD",
+        "composite_score": 0.350275607104957,
+        "avg_return": -0.5173620724756907,
+        "consistency": -0.2301147116776865,
+        "avg_sharpe": -0.4009139801071866,
+        "avg_calmar": -0.609159506633804,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "MACD",
+        "composite_score": 0.34213537193389787,
+        "avg_return": 0.0,
+        "consistency": 1.0,
+        "avg_sharpe": -7.745720288171874e+16,
+        "avg_calmar": 0.0,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "BollingerBands",
+        "composite_score": 0.34213537193389787,
+        "avg_return": 0.0,
+        "consistency": 1.0,
+        "avg_sharpe": -7.745720288171874e+16,
+        "avg_calmar": 0.0,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      },
+      {
+        "strategy": "Momentum",
+        "composite_score": 0.34213537193389787,
+        "avg_return": 0.0,
+        "consistency": 1.0,
+        "avg_sharpe": -7.745720288171874e+16,
+        "avg_calmar": 0.0,
+        "success_rate": 1.0,
+        "scenarios_tested": 6
+      }
+    ]
+  },
+  "production_recommendations": {
+    "tier_1_aggressive": {
+      "strategies": [
+        "MTFMACD",
+        "HistoricalVolatility",
+        "MTFRSI"
+      ],
+      "allocation": "Equal weight or performance-weighted",
+      "risk_profile": "High risk, high reward",
+      "recommended_capital": "60-80% of trading capital"
+    },
+    "tier_2_balanced": {
+      "strategies": [
+        "MTFMACD",
+        "HistoricalVolatility",
+        "MTFRSI",
+        "ATR",
+        "ROC"
+      ],
+      "allocation": "Diversified across market conditions",
+      "risk_profile": "Balanced risk-reward",
+      "recommended_capital": "40-60% of trading capital"
+    },
+    "tier_3_conservative": {
+      "strategies": [
+        "MTFMACD",
+        "HistoricalVolatility",
+        "MTFRSI",
+        "ATR",
+        "ROC",
+        "OBV",
+        "VWAP",
+        "CMF",
+        "Stochastic",
+        "RSI"
+      ],
+      "allocation": "Lower allocation, hedging purposes",
+      "risk_profile": "Conservative, stability-focused",
+      "recommended_capital": "20-40% of trading capital"
+    }
+  },
+  "champion_metrics": {
+    "total_evaluated": 20,
+    "hall_of_fame_count": 3,
+    "champion_count": 5,
+    "selection_criteria": {
+      "return_weight": 0.35,
+      "sharpe_weight": 0.25,
+      "consistency_weight": 0.2,
+      "calmar_weight": 0.1,
+      "success_rate_weight": 0.1
+    }
+  }
+}

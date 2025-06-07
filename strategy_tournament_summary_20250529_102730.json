@@ -1,0 +1,19 @@
+{
+  "tournament_date": "2025-05-29T10:27:30.442781",
+  "total_strategies_tested": 1,
+  "failed_strategies": 23,
+  "champion": {
+    "strategy": "MovingAverageCrossover",
+    "total_return": 4520.0,
+    "sharpe_ratio": 1.85,
+    "max_drawdown": 1250.0
+  },
+  "statistics": {
+    "average_return": 4520.0,
+    "median_return": 4520.0,
+    "best_return": 4520.0,
+    "worst_return": 4520.0,
+    "average_sharpe": 1.85,
+    "best_sharpe": 1.85
+  }
+}

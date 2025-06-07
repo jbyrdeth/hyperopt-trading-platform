@@ -1,0 +1,179 @@
+{
+  "scenario_testing": {
+    "MovingAverageCrossover": {
+      "Strong Bull": {
+        "error": "Invalid strategy parameters"
+      },
+      "Strong Bear": {
+        "error": "Invalid strategy parameters"
+      },
+      "High Volatility": {
+        "error": "Invalid strategy parameters"
+      },
+      "Trending Volatile": {
+        "error": "Invalid strategy parameters"
+      },
+      "Flat Low Vol": {
+        "error": "Invalid strategy parameters"
+      }
+    },
+    "RSIMeanReversion": {
+      "Strong Bull": {
+        "error": "Strategy 'RSIMeanReversion' not found. Available: ['MovingAverageCrossover', 'MACD', 'RSI', 'BollingerBands', 'Momentum', 'ROC', 'Stochastic', 'WilliamsR', 'UltimateOscillator', 'VWAP', 'OBV', 'AD', 'CMF', 'ATR', 'BollingerSqueeze', 'KeltnerChannel', 'HistoricalVolatility', 'SupportResistance', 'PivotPoints', 'FibonacciRetracement', 'DoubleTopBottom', 'MTFTrendAnalysis', 'MTFRSI', 'MTFMACD']"
+      },
+      "Strong Bear": {
+        "error": "Strategy 'RSIMeanReversion' not found. Available: ['MovingAverageCrossover', 'MACD', 'RSI', 'BollingerBands', 'Momentum', 'ROC', 'Stochastic', 'WilliamsR', 'UltimateOscillator', 'VWAP', 'OBV', 'AD', 'CMF', 'ATR', 'BollingerSqueeze', 'KeltnerChannel', 'HistoricalVolatility', 'SupportResistance', 'PivotPoints', 'FibonacciRetracement', 'DoubleTopBottom', 'MTFTrendAnalysis', 'MTFRSI', 'MTFMACD']"
+      },
+      "High Volatility": {
+        "error": "Strategy 'RSIMeanReversion' not found. Available: ['MovingAverageCrossover', 'MACD', 'RSI', 'BollingerBands', 'Momentum', 'ROC', 'Stochastic', 'WilliamsR', 'UltimateOscillator', 'VWAP', 'OBV', 'AD', 'CMF', 'ATR', 'BollingerSqueeze', 'KeltnerChannel', 'HistoricalVolatility', 'SupportResistance', 'PivotPoints', 'FibonacciRetracement', 'DoubleTopBottom', 'MTFTrendAnalysis', 'MTFRSI', 'MTFMACD']"
+      },
+      "Trending Volatile": {
+        "error": "Strategy 'RSIMeanReversion' not found. Available: ['MovingAverageCrossover', 'MACD', 'RSI', 'BollingerBands', 'Momentum', 'ROC', 'Stochastic', 'WilliamsR', 'UltimateOscillator', 'VWAP', 'OBV', 'AD', 'CMF', 'ATR', 'BollingerSqueeze', 'KeltnerChannel', 'HistoricalVolatility', 'SupportResistance', 'PivotPoints', 'FibonacciRetracement', 'DoubleTopBottom', 'MTFTrendAnalysis', 'MTFRSI', 'MTFMACD']"
+      },
+      "Flat Low Vol": {
+        "error": "Strategy 'RSIMeanReversion' not found. Available: ['MovingAverageCrossover', 'MACD', 'RSI', 'BollingerBands', 'Momentum', 'ROC', 'Stochastic', 'WilliamsR', 'UltimateOscillator', 'VWAP', 'OBV', 'AD', 'CMF', 'ATR', 'BollingerSqueeze', 'KeltnerChannel', 'HistoricalVolatility', 'SupportResistance', 'PivotPoints', 'FibonacciRetracement', 'DoubleTopBottom', 'MTFTrendAnalysis', 'MTFRSI', 'MTFMACD']"
+      }
+    },
+    "WilliamsR": {
+      "Strong Bull": {
+        "total_return_pct": 0.4660318247045714,
+        "annual_return_pct": 0.9472722639715103,
+        "total_trades": 7,
+        "win_rate_pct": 42.857142857142854,
+        "sharpe_ratio": -0.1702120297937599,
+        "max_drawdown_pct": -10.546578272896772,
+        "profit_factor": 1.0823307803029476,
+        "market_return_pct": 99.30131940739422,
+        "trades_per_month": 1.1666666666666667
+      },
+      "Strong Bear": {
+        "total_return_pct": -13.078474361609882,
+        "annual_return_pct": -24.7400763132555,
+        "total_trades": 9,
+        "win_rate_pct": 22.22222222222222,
+        "sharpe_ratio": -1.542979831145243,
+        "max_drawdown_pct": -151.95300155698106,
+        "profit_factor": 0.7712112549660866,
+        "market_return_pct": -48.220916876185825,
+        "trades_per_month": 1.5
+      },
+      "High Volatility": {
+        "total_return_pct": 33.450152127524156,
+        "annual_return_pct": 79.52264229678654,
+        "total_trades": 10,
+        "win_rate_pct": 40.0,
+        "sharpe_ratio": -0.5933717890862107,
+        "max_drawdown_pct": -123.81434256485242,
+        "profit_factor": 1.3119968159677968,
+        "market_return_pct": 3.367792853545959,
+        "trades_per_month": 1.6666666666666667
+      },
+      "Trending Volatile": {
+        "total_return_pct": 17.135648400020465,
+        "annual_return_pct": 37.81173551560373,
+        "total_trades": 6,
+        "win_rate_pct": 50.0,
+        "sharpe_ratio": -0.5657504687350113,
+        "max_drawdown_pct": -121.05776695832344,
+        "profit_factor": 2.2631676023871403,
+        "market_return_pct": 50.80905459148135,
+        "trades_per_month": 1.0
+      },
+      "Flat Low Vol": {
+        "total_return_pct": -2.2248642959483145,
+        "annual_return_pct": -4.459959244565182,
+        "total_trades": 2,
+        "win_rate_pct": 50.0,
+        "sharpe_ratio": -0.10382719671852873,
+        "max_drawdown_pct": -6.729639871290403,
+        "profit_factor": 0.17322854508625649,
+        "market_return_pct": 0.3517603456805851,
+        "trades_per_month": 0.3333333333333333
+      }
+    },
+    "MACD": {
+      "Strong Bull": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": -9.291976380370397e+16,
+        "max_drawdown_pct": 0.0,
+        "profit_factor": 0,
+        "market_return_pct": 99.30131940739422,
+        "trades_per_month": 0.0
+      },
+      "Strong Bear": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": -9.291976380370397e+16,
+        "max_drawdown_pct": 0.0,
+        "profit_factor": 0,
+        "market_return_pct": -48.220916876185825,
+        "trades_per_month": 0.0
+      },
+      "High Volatility": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": -9.291976380370397e+16,
+        "max_drawdown_pct": 0.0,
+        "profit_factor": 0,
+        "market_return_pct": 3.367792853545959,
+        "trades_per_month": 0.0
+      },
+      "Trending Volatile": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": -9.291976380370397e+16,
+        "max_drawdown_pct": 0.0,
+        "profit_factor": 0,
+        "market_return_pct": 50.80905459148135,
+        "trades_per_month": 0.0
+      },
+      "Flat Low Vol": {
+        "total_return_pct": 0.0,
+        "annual_return_pct": 0.0,
+        "total_trades": 0,
+        "win_rate_pct": 0,
+        "sharpe_ratio": -9.291976380370397e+16,
+        "max_drawdown_pct": 0.0,
+        "profit_factor": 0,
+        "market_return_pct": 0.3517603456805851,
+        "trades_per_month": 0.0
+      }
+    }
+  },
+  "parameter_sensitivity": {
+    "MovingAverageCrossover": {
+      "Config_3": {
+        "parameters": {
+          "fast_period": 10,
+          "slow_period": 20,
+          "signal_threshold": 0.01
+        },
+        "trades": 10,
+        "return_pct": 7.7447371444421265,
+        "win_rate_pct": 10.0
+      },
+      "Config_4": {
+        "parameters": {
+          "fast_period": 20,
+          "slow_period": 50,
+          "signal_threshold": 0.02
+        },
+        "trades": 0,
+        "return_pct": 0.0,
+        "win_rate_pct": 0
+      }
+    },
+    "RSIMeanReversion": {}
+  },
+  "data_quality": {},
+  "api_testing": {}
+}

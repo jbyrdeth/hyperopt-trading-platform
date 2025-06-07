@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 import os
 from pathlib import Path
 
-from monitoring.logging import get_log_aggregator, LogLevel, LogCategory, LogContext, log_with_context
+from ..monitoring.logging import get_log_aggregator, LogLevel, LogCategory, LogContext, log_with_context
 
 logger = logging.getLogger("api.logs")
 

@@ -1,0 +1,181 @@
+{
+  "total_tests": 120,
+  "successful_tests": 100,
+  "success_rate": 83.33333333333334,
+  "top_strategies": [
+    {
+      "strategy_name": "CMF",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 4.5773811718167225,
+      "avg_max_drawdown": -0.006535829212281121,
+      "avg_win_rate": 0.2881119465329992,
+      "avg_trades": 70.4,
+      "avg_profit_factor": 0.7363111263093289,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 4.286254919091674
+    },
+    {
+      "strategy_name": "MTFMACD",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 4.446267835196901,
+      "avg_max_drawdown": -0.01873347603965238,
+      "avg_win_rate": 0.29630530076159206,
+      "avg_trades": 62.6,
+      "avg_profit_factor": 0.7808733694386232,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 4.2522660587055325
+    },
+    {
+      "strategy_name": "VWAP",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 4.351872654543612,
+      "avg_max_drawdown": -0.011532657550099327,
+      "avg_win_rate": 0.29210339080917164,
+      "avg_trades": 60.4,
+      "avg_profit_factor": 0.8355125370583909,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 4.2294771407472584
+    },
+    {
+      "strategy_name": "AD",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 4.337606023273049,
+      "avg_max_drawdown": -0.010302362383420052,
+      "avg_win_rate": 0.29669860328192205,
+      "avg_trades": 61.6,
+      "avg_profit_factor": 1.1007944508072887,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 4.226845823833867
+    },
+    {
+      "strategy_name": "HistoricalVolatility",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 4.301957173655906,
+      "avg_max_drawdown": -0.01232707797015957,
+      "avg_win_rate": 0.24920994914403485,
+      "avg_trades": 67.8,
+      "avg_profit_factor": 0.3784991863329688,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 4.21040537019155
+    },
+    {
+      "strategy_name": "OBV",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 4.220171701684415,
+      "avg_max_drawdown": -0.010642290657691922,
+      "avg_win_rate": 0.30373775212896403,
+      "avg_trades": 57.6,
+      "avg_profit_factor": 0.9185864135324302,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 4.19847513010891
+    },
+    {
+      "strategy_name": "MTFRSI",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 3.043055832387485,
+      "avg_max_drawdown": -0.015027607228597398,
+      "avg_win_rate": 0.2485065187662184,
+      "avg_trades": 32.2,
+      "avg_profit_factor": 0.9691428073881502,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 3.8950344144660844
+    },
+    {
+      "strategy_name": "UltimateOscillator",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 2.948765203943286,
+      "avg_max_drawdown": -0.011276269583218644,
+      "avg_win_rate": 0.2940398995059643,
+      "avg_trades": 30.0,
+      "avg_profit_factor": 0.5037113073553006,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 3.8790420319950725
+    },
+    {
+      "strategy_name": "MovingAverageCrossover",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 2.193179411715758,
+      "avg_max_drawdown": -0.009352500264287578,
+      "avg_win_rate": 0.3397243107769424,
+      "avg_trades": 17.2,
+      "avg_profit_factor": 1.176499603675263,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 3.697382999492623
+    },
+    {
+      "strategy_name": "KeltnerChannel",
+      "avg_annual_return": 10.0,
+      "avg_sharpe_ratio": 2.1633464263864233,
+      "avg_max_drawdown": -0.005026094990806784,
+      "avg_win_rate": 0.38132730015082955,
+      "avg_trades": 18.0,
+      "avg_profit_factor": 1.0684432040756677,
+      "success_rate": 100.0,
+      "consistency_score": 1.0,
+      "composite_score": 3.6970304826210687
+    }
+  ],
+  "categories": {
+    "bull_market_champions": [
+      "MTFMACD",
+      "AD",
+      "OBV",
+      "VWAP",
+      "MTFRSI"
+    ],
+    "bear_market_defenders": [
+      "MTFMACD",
+      "VWAP",
+      "HistoricalVolatility",
+      "OBV",
+      "AD"
+    ],
+    "sideways_market_specialists": [
+      "MTFMACD",
+      "VWAP",
+      "HistoricalVolatility",
+      "MTFRSI",
+      "OBV"
+    ],
+    "volatility_masters": [
+      "AD",
+      "CMF",
+      "MTFMACD",
+      "OBV",
+      "HistoricalVolatility"
+    ],
+    "all_weather_performers": [
+      "CMF",
+      "MTFMACD",
+      "VWAP",
+      "AD",
+      "HistoricalVolatility",
+      "OBV",
+      "MTFRSI",
+      "UltimateOscillator"
+    ],
+    "high_frequency_traders": [
+      "CMF",
+      "HistoricalVolatility",
+      "MTFMACD",
+      "AD",
+      "VWAP"
+    ],
+    "risk_adjusted_leaders": [
+      "CMF",
+      "MTFMACD",
+      "VWAP",
+      "AD",
+      "HistoricalVolatility"
+    ]
+  }
+}

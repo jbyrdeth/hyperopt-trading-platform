@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-05-29T12:08:09.414205",
+  "market_benchmark": -45.44970487764025,
+  "data_period_days": 180,
+  "optimization_results": {
+    "individual_strategies": {
+      "MovingAverageCrossover": [],
+      "MACD": [],
+      "RSI": [],
+      "BollingerBands": []
+    },
+    "optimal_portfolios": []
+  },
+  "performance_breakthrough": {
+    "best_individual_annual_return": -999,
+    "best_portfolio_annual_return": -999,
+    "best_portfolio_sharpe": -999
+  }
+}

@@ -17,16 +17,16 @@ import asyncio
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, File, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
-from models import (
+from ..models import (
     BaseResponse, OptimizationResult, PerformanceMetrics,
     PineScriptExportRequest, PineScriptExportResponse,
     ReportExportRequest, ReportExportResponse, FileDownloadResponse
 )
-from auth import verify_api_key, require_permission
-from job_manager import job_manager, JobPriority
+from ..auth import verify_api_key, require_permission
+from ..job_manager import job_manager, JobPriority
 
 # Import monitoring
-from monitoring import get_metrics_collector
+from ..monitoring import get_metrics_collector
 
 # Import existing export components
 # from src.export import PineScriptGenerator

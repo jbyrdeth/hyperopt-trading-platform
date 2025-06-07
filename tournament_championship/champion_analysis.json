@@ -1,0 +1,368 @@
+{
+  "strategy_rankings": [
+    {
+      "strategy": "MTFMACD",
+      "composite_score": 0.5439262978094267,
+      "avg_return": -0.9810225511753492,
+      "consistency": 0.9690555011983378,
+      "avg_sharpe": -0.7869567935781242,
+      "avg_calmar": -1.0682802221492267,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "HistoricalVolatility",
+      "composite_score": 0.5359609000315408,
+      "avg_return": -0.9442681413861441,
+      "consistency": 0.9292009168292236,
+      "avg_sharpe": -0.5915168992404828,
+      "avg_calmar": -1.2073025525049264,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "MTFRSI",
+      "composite_score": 0.43746662398005143,
+      "avg_return": 216.50157868189044,
+      "consistency": -1.1194704701461045,
+      "avg_sharpe": -0.27437453988790733,
+      "avg_calmar": 509.4765773109718,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "ATR",
+      "composite_score": 0.42953714591040115,
+      "avg_return": -0.3310301268768178,
+      "consistency": 0.3962770312355576,
+      "avg_sharpe": -0.6824017252158088,
+      "avg_calmar": -1.8464827779116344,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "ROC",
+      "composite_score": 0.3518140558010209,
+      "avg_return": 2.370542397274818,
+      "consistency": -1.793811700376195,
+      "avg_sharpe": -0.33474855972623313,
+      "avg_calmar": 15.39688333275101,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "OBV",
+      "composite_score": 0.351098231035056,
+      "avg_return": 1.656821890453619,
+      "consistency": -2.3646731058843296,
+      "avg_sharpe": -0.2843209040068964,
+      "avg_calmar": 3.260614586878115,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "VWAP",
+      "composite_score": 0.3510217396941425,
+      "avg_return": 1.32357490756806,
+      "consistency": -1.4284796791481922,
+      "avg_sharpe": -0.30418597081180904,
+      "avg_calmar": 3.876378993094034,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "CMF",
+      "composite_score": 0.35047293828741544,
+      "avg_return": -0.04637125566388611,
+      "consistency": -5.526946476582587,
+      "avg_sharpe": -0.54288868970328,
+      "avg_calmar": 0.6953700074164234,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "Stochastic",
+      "composite_score": 0.3504643503480901,
+      "avg_return": -0.03641947413237003,
+      "consistency": -13.685412600918141,
+      "avg_sharpe": -0.39727481893405875,
+      "avg_calmar": 0.4119711098413484,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "RSI",
+      "composite_score": 0.35046020832183145,
+      "avg_return": -0.08565579528796519,
+      "consistency": -5.22381292707945,
+      "avg_sharpe": -0.5033848080347302,
+      "avg_calmar": 0.677458113408103,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "MovingAverageCrossover",
+      "composite_score": 0.35040919968338946,
+      "avg_return": -0.1756943714868501,
+      "consistency": -2.097607743642866,
+      "avg_sharpe": -0.2946598820193113,
+      "avg_calmar": 0.10424752864865124,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "WilliamsR",
+      "composite_score": 0.3503795152763153,
+      "avg_return": -0.18364098818760496,
+      "consistency": -0.6222223926197405,
+      "avg_sharpe": -0.2899216284765331,
+      "avg_calmar": -0.5601666284222308,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "KeltnerChannel",
+      "composite_score": 0.3503773576962602,
+      "avg_return": -0.22472401702886713,
+      "consistency": -1.628655874159008,
+      "avg_sharpe": -0.47703316336969986,
+      "avg_calmar": -0.30699085164491513,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "BollingerSqueeze",
+      "composite_score": 0.35033444178476336,
+      "avg_return": -0.3246598167496721,
+      "consistency": -0.7488677225735554,
+      "avg_sharpe": -0.42940963296039797,
+      "avg_calmar": -0.6092794082044571,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "UltimateOscillator",
+      "composite_score": 0.3502898075227784,
+      "avg_return": -0.4519237287995865,
+      "consistency": -0.1445668424338744,
+      "avg_sharpe": -0.31439813664503163,
+      "avg_calmar": -0.7500590653089915,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "MTFTrendAnalysis",
+      "composite_score": 0.3502794781512255,
+      "avg_return": -0.4487167939744538,
+      "consistency": -0.20718737457470948,
+      "avg_sharpe": -0.3802683065216901,
+      "avg_calmar": -1.0257058407096111,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "AD",
+      "composite_score": 0.350275607104957,
+      "avg_return": -0.5173620724756907,
+      "consistency": -0.2301147116776865,
+      "avg_sharpe": -0.4009139801071866,
+      "avg_calmar": -0.609159506633804,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "MACD",
+      "composite_score": 0.34213537193389787,
+      "avg_return": 0.0,
+      "consistency": 1.0,
+      "avg_sharpe": -7.745720288171874e+16,
+      "avg_calmar": 0.0,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "BollingerBands",
+      "composite_score": 0.34213537193389787,
+      "avg_return": 0.0,
+      "consistency": 1.0,
+      "avg_sharpe": -7.745720288171874e+16,
+      "avg_calmar": 0.0,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    },
+    {
+      "strategy": "Momentum",
+      "composite_score": 0.34213537193389787,
+      "avg_return": 0.0,
+      "consistency": 1.0,
+      "avg_sharpe": -7.745720288171874e+16,
+      "avg_calmar": 0.0,
+      "success_rate": 1.0,
+      "scenarios_tested": 6
+    }
+  ],
+  "performance_matrix": "                        annual_return_mean  annual_return_std  ...  win_rate_mean  calmar_ratio_mean\nstrategy                                                       ...                                  \nAD                                  -0.517              0.649  ...          0.325             -0.609\nATR                                 -0.331              0.206  ...          0.269             -1.846\nBollingerBands                       0.000              0.000  ...          0.000              0.000\nBollingerSqueeze                    -0.325              0.585  ...          0.386             -0.609\nCMF                                 -0.046              0.368  ...          0.399              0.695\nHistoricalVolatility                -0.944              0.068  ...          0.303             -1.207\nKeltnerChannel                      -0.225              0.617  ...          0.383             -0.307\nMACD                                 0.000              0.000  ...          0.000              0.000\nMTFMACD                             -0.981              0.031  ...          0.336             -1.068\nMTFRSI                             216.502            458.890  ...          0.274            509.477\nMTFTrendAnalysis                    -0.449              0.554  ...          0.376             -1.026\nMomentum                             0.000              0.000  ...          0.000              0.000\nMovingAverageCrossover              -0.176              0.575  ...          0.383              0.104\nOBV                                  1.657              5.608  ...          0.324              3.261\nROC                                  2.371              6.651  ...          0.330             15.397\nRSI                                 -0.086              0.595  ...          0.356              0.677\nStochastic                          -0.036              0.682  ...          0.458              0.412\nUltimateOscillator                  -0.452              0.529  ...          0.374             -0.750\nVWAP                                 1.324              3.239  ...          0.359              3.876\nWilliamsR                           -0.184              0.314  ...          0.445             -0.560\n\n[20 rows x 11 columns]",
+  "scenario_analysis": {
+    "mega_bull": {
+      "best_strategy": "MTFRSI",
+      "best_return": 149.85173101107674,
+      "worst_strategy": "MTFMACD",
+      "worst_return": -0.9688630775691598,
+      "avg_return": 7.49496630465416,
+      "strategies_tested": 20,
+      "positive_strategies": 10
+    },
+    "crypto_winter": {
+      "best_strategy": "BollingerSqueeze",
+      "best_return": 0.58694244767863,
+      "worst_strategy": "MTFMACD",
+      "worst_return": -0.9999999999999992,
+      "avg_return": -0.5549780860743567,
+      "strategies_tested": 20,
+      "positive_strategies": 1
+    },
+    "sideways_grind": {
+      "best_strategy": "Stochastic",
+      "best_return": 0.3385813528701722,
+      "worst_strategy": "MTFMACD",
+      "worst_return": -0.9996485264046058,
+      "avg_return": -0.4240233153996611,
+      "strategies_tested": 20,
+      "positive_strategies": 2
+    },
+    "black_swan": {
+      "best_strategy": "ROC",
+      "best_return": 15.926456879991395,
+      "worst_strategy": "MTFMACD",
+      "worst_return": -1.0,
+      "avg_return": 0.15976799835217537,
+      "strategies_tested": 20,
+      "positive_strategies": 1
+    },
+    "recovery_boom": {
+      "best_strategy": "MTFRSI",
+      "best_return": 1145.2652844870004,
+      "worst_strategy": "HistoricalVolatility",
+      "worst_return": -0.9420302303669637,
+      "avg_return": 58.1332911065723,
+      "strategies_tested": 20,
+      "positive_strategies": 9
+    },
+    "accumulation": {
+      "best_strategy": "MTFRSI",
+      "best_return": 6.807428163042483,
+      "worst_strategy": "MTFMACD",
+      "worst_return": -0.9941709665371475,
+      "avg_return": 0.32128461508389367,
+      "strategies_tested": 20,
+      "positive_strategies": 5
+    }
+  },
+  "correlation_analysis": {
+    "correlation_matrix": "strategy                      AD       ATR  BollingerBands  ...  UltimateOscillator      VWAP  WilliamsR\nstrategy                                                    ...                                         \nAD                      1.000000  0.350533             NaN  ...            0.797104  0.012139   0.804948\nATR                     0.350533  1.000000             NaN  ...           -0.171949 -0.649273  -0.172967\nBollingerBands               NaN       NaN             NaN  ...                 NaN       NaN        NaN\nBollingerSqueeze        0.211196  0.740448             NaN  ...           -0.043100 -0.208007  -0.172965\nCMF                     0.120667 -0.530450             NaN  ...            0.501498  0.700623   0.653262\nHistoricalVolatility    0.620637  0.136531             NaN  ...            0.739628  0.528823   0.794386\nKeltnerChannel          0.775304  0.637225             NaN  ...            0.352407 -0.374611   0.365599\nMACD                         NaN       NaN             NaN  ...                 NaN       NaN        NaN\nMTFMACD                 0.257629 -0.617327             NaN  ...            0.732511  0.794323   0.549524\nMTFRSI                 -0.010823 -0.754710             NaN  ...            0.535238  0.813496   0.348847\nMTFTrendAnalysis       -0.200842 -0.695370             NaN  ...            0.343547  0.783490   0.120407\nMomentum                     NaN       NaN             NaN  ...                 NaN       NaN        NaN\nMovingAverageCrossover  0.140479 -0.847208             NaN  ...            0.545134  0.644937   0.573487\nOBV                    -0.047868 -0.773123             NaN  ...            0.513384  0.830873   0.332021\nROC                    -0.325990  0.068939             NaN  ...           -0.426375 -0.354293  -0.335679\nRSI                     0.544048 -0.511867             NaN  ...            0.930882  0.795606   0.871042\nStochastic              0.221878 -0.715630             NaN  ...            0.632574  0.719256   0.574958\nUltimateOscillator      0.797104 -0.171949             NaN  ...            1.000000  0.600905   0.944907\nVWAP                    0.012139 -0.649273             NaN  ...            0.600905  1.000000   0.510228\nWilliamsR               0.804948 -0.172967             NaN  ...            0.944907  0.510228   1.000000\n\n[20 rows x 20 columns]",
+    "highest_correlations": [
+      {
+        "strategy1": "MTFRSI",
+        "strategy2": "OBV",
+        "correlation": 0.9987244726670038
+      },
+      {
+        "strategy1": "MTFMACD",
+        "strategy2": "MTFRSI",
+        "correlation": 0.9624396380345334
+      },
+      {
+        "strategy1": "MTFMACD",
+        "strategy2": "OBV",
+        "correlation": 0.9512194145455373
+      },
+      {
+        "strategy1": "UltimateOscillator",
+        "strategy2": "WilliamsR",
+        "correlation": 0.944907192637703
+      },
+      {
+        "strategy1": "MTFTrendAnalysis",
+        "strategy2": "OBV",
+        "correlation": 0.9443030431070873
+      },
+      {
+        "strategy1": "MTFRSI",
+        "strategy2": "MTFTrendAnalysis",
+        "correlation": 0.9368095071180689
+      },
+      {
+        "strategy1": "MovingAverageCrossover",
+        "strategy2": "Stochastic",
+        "correlation": 0.9325193212176834
+      },
+      {
+        "strategy1": "RSI",
+        "strategy2": "UltimateOscillator",
+        "correlation": 0.930881789750203
+      },
+      {
+        "strategy1": "MTFMACD",
+        "strategy2": "RSI",
+        "correlation": 0.8725644720250669
+      },
+      {
+        "strategy1": "RSI",
+        "strategy2": "WilliamsR",
+        "correlation": 0.8710421000338959
+      }
+    ],
+    "lowest_correlations": [
+      {
+        "strategy1": "HistoricalVolatility",
+        "strategy2": "MTFRSI",
+        "correlation": 0.08179945521718443
+      },
+      {
+        "strategy1": "KeltnerChannel",
+        "strategy2": "RSI",
+        "correlation": 0.07044965652447086
+      },
+      {
+        "strategy1": "ATR",
+        "strategy2": "ROC",
+        "correlation": 0.06893859062407579
+      },
+      {
+        "strategy1": "AD",
+        "strategy2": "OBV",
+        "correlation": -0.04786791574509942
+      },
+      {
+        "strategy1": "BollingerSqueeze",
+        "strategy2": "UltimateOscillator",
+        "correlation": -0.04309966118408217
+      },
+      {
+        "strategy1": "CMF",
+        "strategy2": "ROC",
+        "correlation": 0.026587574613473722
+      },
+      {
+        "strategy1": "KeltnerChannel",
+        "strategy2": "Stochastic",
+        "correlation": 0.021452836878311517
+      },
+      {
+        "strategy1": "HistoricalVolatility",
+        "strategy2": "MTFTrendAnalysis",
+        "correlation": -0.012557940025966422
+      },
+      {
+        "strategy1": "AD",
+        "strategy2": "VWAP",
+        "correlation": 0.012138970966842855
+      },
+      {
+        "strategy1": "AD",
+        "strategy2": "MTFRSI",
+        "correlation": -0.010823049545585826
+      }
+    ]
+  }
+}

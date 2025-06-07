@@ -1,0 +1,18 @@
+# MkDocs Documentation Requirements
+mkdocs>=1.5.0
+mkdocs-material>=9.4.0
+mkdocs-autorefs>=0.5.0
+mkdocs-glightbox>=0.3.4
+mkdocs-git-revision-date-localized-plugin>=1.2.0
+mkdocs-git-committers-plugin-2>=1.2.0
+mkdocs-minify-plugin>=0.7.0
+
+# Python dependencies for documentation
+pymdown-extensions>=10.3.0
+markdown>=3.5.0
+jinja2>=3.1.0
+markupsafe>=2.1.0
+
+# Optional dependencies for enhanced features
+pillow>=10.0.0
+cairosvg>=2.7.0 

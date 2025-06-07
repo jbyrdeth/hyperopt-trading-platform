@@ -1,0 +1,1716 @@
+{
+  "diagnostics": {
+    "diagnostics": {
+      "MovingAverageCrossover": {
+        "signature": {
+          "strategy_name": "MovingAverageCrossover",
+          "class_name": "MovingAverageCrossoverStrategy",
+          "parameters": {
+            "fast_period": {
+              "name": "fast_period",
+              "annotation": "<class 'int'>",
+              "default": 10,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "slow_period": {
+              "name": "slow_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "ma_type": {
+              "name": "ma_type",
+              "annotation": "<class 'str'>",
+              "default": "SMA",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "signal_threshold": {
+              "name": "signal_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.005,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 8,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "MovingAverageCrossover",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "MACD": {
+        "signature": {
+          "strategy_name": "MACD",
+          "class_name": "MACDStrategy",
+          "parameters": {
+            "fast_period": {
+              "name": "fast_period",
+              "annotation": "<class 'int'>",
+              "default": 12,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "slow_period": {
+              "name": "slow_period",
+              "annotation": "<class 'int'>",
+              "default": 26,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "signal_period": {
+              "name": "signal_period",
+              "annotation": "<class 'int'>",
+              "default": 9,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "histogram_threshold": {
+              "name": "histogram_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.1,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 8,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "MACD",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "RSI": {
+        "signature": {
+          "strategy_name": "RSI",
+          "class_name": "RSIStrategy",
+          "parameters": {
+            "rsi_period": {
+              "name": "rsi_period",
+              "annotation": "<class 'int'>",
+              "default": 14,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "oversold": {
+              "name": "oversold",
+              "annotation": "<class 'float'>",
+              "default": 30,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "overbought": {
+              "name": "overbought",
+              "annotation": "<class 'float'>",
+              "default": 70,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "exit_signal": {
+              "name": "exit_signal",
+              "annotation": "<class 'str'>",
+              "default": "opposite",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 8,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "RSI",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "BollingerBands": {
+        "signature": {
+          "strategy_name": "BollingerBands",
+          "class_name": "BollingerBandsStrategy",
+          "parameters": {
+            "period": {
+              "name": "period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "std_dev": {
+              "name": "std_dev",
+              "annotation": "<class 'float'>",
+              "default": 2.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "squeeze_threshold": {
+              "name": "squeeze_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.2,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "entry_method": {
+              "name": "entry_method",
+              "annotation": "<class 'str'>",
+              "default": "breakout",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 8,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "BollingerBands",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "Momentum": {
+        "signature": {
+          "strategy_name": "Momentum",
+          "class_name": "MomentumStrategy",
+          "parameters": {
+            "period": {
+              "name": "period",
+              "annotation": "<class 'int'>",
+              "default": 14,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "threshold": {
+              "name": "threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 6,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "Momentum",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "ROC": {
+        "signature": {
+          "strategy_name": "ROC",
+          "class_name": "ROCStrategy",
+          "parameters": {
+            "roc_period": {
+              "name": "roc_period",
+              "annotation": "<class 'int'>",
+              "default": 12,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "signal_threshold": {
+              "name": "signal_threshold",
+              "annotation": "<class 'float'>",
+              "default": 2.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "persistence_bars": {
+              "name": "persistence_bars",
+              "annotation": "<class 'int'>",
+              "default": 3,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "ma_smoothing": {
+              "name": "ma_smoothing",
+              "annotation": "<class 'int'>",
+              "default": 5,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "divergence_lookback": {
+              "name": "divergence_lookback",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_filter": {
+              "name": "trend_filter",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_period": {
+              "name": "trend_period",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 12,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "ROC",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "Stochastic": {
+        "signature": {
+          "strategy_name": "Stochastic",
+          "class_name": "StochasticStrategy",
+          "parameters": {
+            "k_period": {
+              "name": "k_period",
+              "annotation": "<class 'int'>",
+              "default": 14,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "d_period": {
+              "name": "d_period",
+              "annotation": "<class 'int'>",
+              "default": 3,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "overbought": {
+              "name": "overbought",
+              "annotation": "<class 'int'>",
+              "default": 80,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "oversold": {
+              "name": "oversold",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_filter_period": {
+              "name": "trend_filter_period",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "divergence_lookback": {
+              "name": "divergence_lookback",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "adaptive_levels": {
+              "name": "adaptive_levels",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 12,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "Stochastic",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "WilliamsR": {
+        "signature": {
+          "strategy_name": "WilliamsR",
+          "class_name": "WilliamsRStrategy",
+          "parameters": {
+            "wr_period": {
+              "name": "wr_period",
+              "annotation": "<class 'int'>",
+              "default": 14,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "buy_level": {
+              "name": "buy_level",
+              "annotation": "<class 'float'>",
+              "default": -80.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "sell_level": {
+              "name": "sell_level",
+              "annotation": "<class 'float'>",
+              "default": -20.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_filter_period": {
+              "name": "trend_filter_period",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_multiplier": {
+              "name": "volume_multiplier",
+              "annotation": "<class 'float'>",
+              "default": 1.5,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "failure_swing_bars": {
+              "name": "failure_swing_bars",
+              "annotation": "<class 'int'>",
+              "default": 5,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "multi_timeframe": {
+              "name": "multi_timeframe",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 11,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "WilliamsR",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "UltimateOscillator": {
+        "signature": {
+          "strategy_name": "UltimateOscillator",
+          "class_name": "UltimateOscillatorStrategy",
+          "parameters": {
+            "short_period": {
+              "name": "short_period",
+              "annotation": "<class 'int'>",
+              "default": 7,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "medium_period": {
+              "name": "medium_period",
+              "annotation": "<class 'int'>",
+              "default": 21,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "long_period": {
+              "name": "long_period",
+              "annotation": "<class 'int'>",
+              "default": 28,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "overbought": {
+              "name": "overbought",
+              "annotation": "<class 'int'>",
+              "default": 70,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "oversold": {
+              "name": "oversold",
+              "annotation": "<class 'int'>",
+              "default": 30,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "signal_threshold": {
+              "name": "signal_threshold",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_confirmation": {
+              "name": "trend_confirmation",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "divergence_lookback": {
+              "name": "divergence_lookback",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 13,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "UltimateOscillator",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "VWAP": {
+        "signature": {
+          "strategy_name": "VWAP",
+          "class_name": "VWAPStrategy",
+          "parameters": {
+            "vwap_period": {
+              "name": "vwap_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "deviation_threshold": {
+              "name": "deviation_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_multiplier": {
+              "name": "volume_multiplier",
+              "annotation": "<class 'float'>",
+              "default": 1.5,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trading_mode": {
+              "name": "trading_mode",
+              "annotation": "<class 'str'>",
+              "default": "mean_reversion",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 8,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "VWAP",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "OBV": {
+        "signature": {
+          "strategy_name": "OBV",
+          "class_name": "OBVStrategy",
+          "parameters": {
+            "obv_ma_period": {
+              "name": "obv_ma_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "divergence_lookback": {
+              "name": "divergence_lookback",
+              "annotation": "<class 'int'>",
+              "default": 10,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "signal_threshold": {
+              "name": "signal_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_threshold": {
+              "name": "volume_threshold",
+              "annotation": "<class 'float'>",
+              "default": 1.2,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 8,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "OBV",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "AD": {
+        "signature": {
+          "strategy_name": "AD",
+          "class_name": "ADStrategy",
+          "parameters": {
+            "ad_ma_period": {
+              "name": "ad_ma_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_threshold": {
+              "name": "trend_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_filter": {
+              "name": "volume_filter",
+              "annotation": "<class 'float'>",
+              "default": 1.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "divergence_lookback": {
+              "name": "divergence_lookback",
+              "annotation": "<class 'int'>",
+              "default": 10,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 8,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "AD",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "CMF": {
+        "signature": {
+          "strategy_name": "CMF",
+          "class_name": "CMFStrategy",
+          "parameters": {
+            "cmf_period": {
+              "name": "cmf_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "buy_threshold": {
+              "name": "buy_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.1,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "sell_threshold": {
+              "name": "sell_threshold",
+              "annotation": "<class 'float'>",
+              "default": -0.1,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "momentum_period": {
+              "name": "momentum_period",
+              "annotation": "<class 'int'>",
+              "default": 5,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 9,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "CMF",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "ATR": {
+        "signature": {
+          "strategy_name": "ATR",
+          "class_name": "ATRStrategy",
+          "parameters": {
+            "atr_period": {
+              "name": "atr_period",
+              "annotation": "<class 'int'>",
+              "default": 14,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "breakout_multiplier": {
+              "name": "breakout_multiplier",
+              "annotation": "<class 'float'>",
+              "default": 2.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_multiplier": {
+              "name": "stop_multiplier",
+              "annotation": "<class 'float'>",
+              "default": 1.5,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_filter": {
+              "name": "trend_filter",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_period": {
+              "name": "trend_period",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 9,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "ATR",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "BollingerSqueeze": {
+        "signature": {
+          "strategy_name": "BollingerSqueeze",
+          "class_name": "BollingerSqueezeStrategy",
+          "parameters": {
+            "bb_period": {
+              "name": "bb_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "bb_std": {
+              "name": "bb_std",
+              "annotation": "<class 'float'>",
+              "default": 2.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kc_period": {
+              "name": "kc_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kc_atr_mult": {
+              "name": "kc_atr_mult",
+              "annotation": "<class 'float'>",
+              "default": 1.5,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "squeeze_threshold": {
+              "name": "squeeze_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "breakout_bars": {
+              "name": "breakout_bars",
+              "annotation": "<class 'int'>",
+              "default": 3,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 11,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "BollingerSqueeze",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "KeltnerChannel": {
+        "signature": {
+          "strategy_name": "KeltnerChannel",
+          "class_name": "KeltnerChannelStrategy",
+          "parameters": {
+            "kc_period": {
+              "name": "kc_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "atr_multiplier": {
+              "name": "atr_multiplier",
+              "annotation": "<class 'float'>",
+              "default": 2.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trading_mode": {
+              "name": "trading_mode",
+              "annotation": "<class 'str'>",
+              "default": "breakout",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "channel_position": {
+              "name": "channel_position",
+              "annotation": "<class 'str'>",
+              "default": "middle",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_filter": {
+              "name": "trend_filter",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_period": {
+              "name": "trend_period",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 11,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "KeltnerChannel",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "HistoricalVolatility": {
+        "signature": {
+          "strategy_name": "HistoricalVolatility",
+          "class_name": "HistoricalVolatilityStrategy",
+          "parameters": {
+            "volatility_period": {
+              "name": "volatility_period",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "regime_period": {
+              "name": "regime_period",
+              "annotation": "<class 'int'>",
+              "default": 60,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "high_vol_threshold": {
+              "name": "high_vol_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.75,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "low_vol_threshold": {
+              "name": "low_vol_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.25,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_period": {
+              "name": "trend_period",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "momentum_period": {
+              "name": "momentum_period",
+              "annotation": "<class 'int'>",
+              "default": 10,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 11,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "HistoricalVolatility",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "SupportResistance": {
+        "signature": {
+          "strategy_name": "SupportResistance",
+          "class_name": "SupportResistanceStrategy",
+          "parameters": {
+            "parameters": {
+              "name": "parameters",
+              "annotation": "typing.Dict[str, typing.Any]",
+              "default": null,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            }
+          },
+          "total_params": 1,
+          "required_params": 0,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "SupportResistance",
+          "status": "success",
+          "parameters_used": {},
+          "strategy_created": true
+        }
+      },
+      "PivotPoints": {
+        "signature": {
+          "strategy_name": "PivotPoints",
+          "class_name": "PivotPointsStrategy",
+          "parameters": {
+            "parameters": {
+              "name": "parameters",
+              "annotation": "typing.Dict[str, typing.Any]",
+              "default": null,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            }
+          },
+          "total_params": 1,
+          "required_params": 0,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "PivotPoints",
+          "status": "success",
+          "parameters_used": {},
+          "strategy_created": true
+        }
+      },
+      "FibonacciRetracement": {
+        "signature": {
+          "strategy_name": "FibonacciRetracement",
+          "class_name": "FibonacciRetracementStrategy",
+          "parameters": {
+            "parameters": {
+              "name": "parameters",
+              "annotation": "typing.Dict[str, typing.Any]",
+              "default": null,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            }
+          },
+          "total_params": 1,
+          "required_params": 0,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "FibonacciRetracement",
+          "status": "success",
+          "parameters_used": {},
+          "strategy_created": true
+        }
+      },
+      "DoubleTopBottom": {
+        "signature": {
+          "strategy_name": "DoubleTopBottom",
+          "class_name": "DoubleTopBottomStrategy",
+          "parameters": {
+            "parameters": {
+              "name": "parameters",
+              "annotation": "typing.Dict[str, typing.Any]",
+              "default": null,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            }
+          },
+          "total_params": 1,
+          "required_params": 0,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "DoubleTopBottom",
+          "status": "success",
+          "parameters_used": {},
+          "strategy_created": true
+        }
+      },
+      "MTFTrendAnalysis": {
+        "signature": {
+          "strategy_name": "MTFTrendAnalysis",
+          "class_name": "MTFTrendAnalysisStrategy",
+          "parameters": {
+            "primary_timeframe": {
+              "name": "primary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "1H",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "secondary_timeframe": {
+              "name": "secondary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "4H",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "tertiary_timeframe": {
+              "name": "tertiary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "1D",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "ma_period_short": {
+              "name": "ma_period_short",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "ma_period_long": {
+              "name": "ma_period_long",
+              "annotation": "<class 'int'>",
+              "default": 50,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "ma_type": {
+              "name": "ma_type",
+              "annotation": "<class 'str'>",
+              "default": "EMA",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_alignment_threshold": {
+              "name": "trend_alignment_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.7,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "trend_strength_threshold": {
+              "name": "trend_strength_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "signal_confirmation_bars": {
+              "name": "signal_confirmation_bars",
+              "annotation": "<class 'int'>",
+              "default": 2,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_threshold": {
+              "name": "volume_threshold",
+              "annotation": "<class 'float'>",
+              "default": 1.2,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 15,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "MTFTrendAnalysis",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "MTFRSI": {
+        "signature": {
+          "strategy_name": "MTFRSI",
+          "class_name": "MTFRSIStrategy",
+          "parameters": {
+            "primary_timeframe": {
+              "name": "primary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "1H",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "secondary_timeframe": {
+              "name": "secondary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "4H",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "tertiary_timeframe": {
+              "name": "tertiary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "1D",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "rsi_period": {
+              "name": "rsi_period",
+              "annotation": "<class 'int'>",
+              "default": 14,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "rsi_overbought": {
+              "name": "rsi_overbought",
+              "annotation": "<class 'float'>",
+              "default": 70.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "rsi_oversold": {
+              "name": "rsi_oversold",
+              "annotation": "<class 'float'>",
+              "default": 30.0,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "rsi_alignment_threshold": {
+              "name": "rsi_alignment_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.7,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "divergence_lookback": {
+              "name": "divergence_lookback",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "signal_confirmation_bars": {
+              "name": "signal_confirmation_bars",
+              "annotation": "<class 'int'>",
+              "default": 2,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_threshold": {
+              "name": "volume_threshold",
+              "annotation": "<class 'float'>",
+              "default": 1.2,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 15,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "MTFRSI",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      },
+      "MTFMACD": {
+        "signature": {
+          "strategy_name": "MTFMACD",
+          "class_name": "MTFMACDStrategy",
+          "parameters": {
+            "primary_timeframe": {
+              "name": "primary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "1H",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "secondary_timeframe": {
+              "name": "secondary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "4H",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "tertiary_timeframe": {
+              "name": "tertiary_timeframe",
+              "annotation": "<class 'str'>",
+              "default": "1D",
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "macd_fast": {
+              "name": "macd_fast",
+              "annotation": "<class 'int'>",
+              "default": 12,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "macd_slow": {
+              "name": "macd_slow",
+              "annotation": "<class 'int'>",
+              "default": 26,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "macd_signal": {
+              "name": "macd_signal",
+              "annotation": "<class 'int'>",
+              "default": 9,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "macd_alignment_threshold": {
+              "name": "macd_alignment_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.7,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "histogram_threshold": {
+              "name": "histogram_threshold",
+              "annotation": "<class 'float'>",
+              "default": 0.0001,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "divergence_lookback": {
+              "name": "divergence_lookback",
+              "annotation": "<class 'int'>",
+              "default": 20,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "signal_confirmation_bars": {
+              "name": "signal_confirmation_bars",
+              "annotation": "<class 'int'>",
+              "default": 2,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_confirmation": {
+              "name": "volume_confirmation",
+              "annotation": "<class 'bool'>",
+              "default": true,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "volume_threshold": {
+              "name": "volume_threshold",
+              "annotation": "<class 'float'>",
+              "default": 1.2,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "position_size_pct": {
+              "name": "position_size_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.95,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "stop_loss_pct": {
+              "name": "stop_loss_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.02,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "take_profit_pct": {
+              "name": "take_profit_pct",
+              "annotation": "<class 'float'>",
+              "default": 0.04,
+              "kind": "POSITIONAL_OR_KEYWORD"
+            },
+            "kwargs": {
+              "name": "kwargs",
+              "annotation": null,
+              "default": "REQUIRED",
+              "kind": "VAR_KEYWORD"
+            }
+          },
+          "total_params": 16,
+          "required_params": 1,
+          "status": "success"
+        },
+        "creation_test": {
+          "strategy_name": "MTFMACD",
+          "status": "failed",
+          "error": "'NoneType' object has no attribute 'lower'",
+          "parameters_used": {}
+        }
+      }
+    },
+    "successful_strategies": [
+      "SupportResistance",
+      "PivotPoints",
+      "FibonacciRetracement",
+      "DoubleTopBottom"
+    ],
+    "failed_strategies": [
+      "MovingAverageCrossover",
+      "MACD",
+      "RSI",
+      "BollingerBands",
+      "Momentum",
+      "ROC",
+      "Stochastic",
+      "WilliamsR",
+      "UltimateOscillator",
+      "VWAP",
+      "OBV",
+      "AD",
+      "CMF",
+      "ATR",
+      "BollingerSqueeze",
+      "KeltnerChannel",
+      "HistoricalVolatility",
+      "MTFTrendAnalysis",
+      "MTFRSI",
+      "MTFMACD"
+    ],
+    "success_rate": 0.16666666666666666
+  },
+  "corrected_parameter_mappings": {
+    "SupportResistance": {},
+    "PivotPoints": {},
+    "FibonacciRetracement": {},
+    "DoubleTopBottom": {}
+  },
+  "timestamp": "20250529_115831"
+}

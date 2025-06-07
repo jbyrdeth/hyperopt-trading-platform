@@ -1,0 +1,241 @@
+{
+  "MovingAverageCrossover": {
+    "fast_period": 5,
+    "slow_period": 15,
+    "ma_type": "EMA",
+    "signal_threshold": 0.002,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.025,
+    "take_profit_pct": 0.05
+  },
+  "MACD": {
+    "fast_period": 6,
+    "slow_period": 18,
+    "signal_period": 6,
+    "histogram_threshold": 0.005,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.025,
+    "take_profit_pct": 0.05
+  },
+  "RSI": {
+    "rsi_period": 8,
+    "overbought": 65,
+    "oversold": 35,
+    "exit_signal": "opposite",
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "BollingerBands": {
+    "period": 12,
+    "std_dev": 1.8,
+    "squeeze_threshold": 0.2,
+    "entry_method": "breakout",
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "Momentum": {
+    "period": 8,
+    "threshold": 0.01,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "ROC": {
+    "roc_period": 8,
+    "signal_threshold": 1.0,
+    "persistence_bars": 3,
+    "ma_smoothing": 5,
+    "divergence_lookback": 20,
+    "trend_filter": true,
+    "trend_period": 50,
+    "volume_confirmation": true,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "Stochastic": {
+    "k_period": 8,
+    "d_period": 3,
+    "overbought": 75,
+    "oversold": 25,
+    "trend_filter_period": 50,
+    "divergence_lookback": 20,
+    "adaptive_levels": true,
+    "volume_confirmation": true,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "WilliamsR": {
+    "wr_period": 8,
+    "buy_level": -85,
+    "sell_level": -15,
+    "trend_filter_period": 50,
+    "volume_multiplier": 1.5,
+    "failure_swing_bars": 5,
+    "multi_timeframe": true,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "UltimateOscillator": {
+    "short_period": 7,
+    "medium_period": 14,
+    "long_period": 28,
+    "overbought": 70,
+    "oversold": 30,
+    "signal_threshold": 50,
+    "trend_confirmation": 50,
+    "divergence_lookback": 20,
+    "volume_confirmation": true,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "VWAP": {
+    "vwap_period": 20,
+    "deviation_threshold": 0.02,
+    "volume_multiplier": 1.5,
+    "trading_mode": "mean_reversion",
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "OBV": {
+    "obv_ma_period": 20,
+    "divergence_lookback": 10,
+    "signal_threshold": 0.02,
+    "volume_threshold": 1.2,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "AD": {
+    "ad_ma_period": 20,
+    "trend_threshold": 0.02,
+    "volume_filter": 1.0,
+    "divergence_lookback": 10,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "CMF": {
+    "cmf_period": 20,
+    "buy_threshold": 0.1,
+    "sell_threshold": -0.1,
+    "momentum_period": 5,
+    "volume_confirmation": true,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "ATR": {
+    "atr_period": 10,
+    "breakout_multiplier": 2.0,
+    "stop_multiplier": 1.5,
+    "trend_filter": true,
+    "trend_period": 50,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "BollingerSqueeze": {
+    "bb_period": 20,
+    "bb_std": 2.0,
+    "kc_period": 20,
+    "kc_atr_mult": 1.5,
+    "squeeze_threshold": 0.95,
+    "breakout_bars": 3,
+    "volume_confirmation": true,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "KeltnerChannel": {
+    "kc_period": 20,
+    "atr_multiplier": 2.0,
+    "trading_mode": "breakout",
+    "channel_position": "middle",
+    "trend_filter": true,
+    "trend_period": 50,
+    "volume_confirmation": true,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "HistoricalVolatility": {
+    "volatility_period": 20,
+    "regime_period": 60,
+    "high_vol_threshold": 0.75,
+    "low_vol_threshold": 0.25,
+    "trend_period": 50,
+    "momentum_period": 10,
+    "volume_confirmation": true,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "SupportResistance": {
+    "parameters": null
+  },
+  "PivotPoints": {
+    "parameters": null
+  },
+  "FibonacciRetracement": {
+    "parameters": null
+  },
+  "DoubleTopBottom": {
+    "parameters": null
+  },
+  "MTFTrendAnalysis": {
+    "primary_timeframe": "1H",
+    "secondary_timeframe": "4H",
+    "tertiary_timeframe": "1D",
+    "ma_period_short": 20,
+    "ma_period_long": 50,
+    "ma_type": "EMA",
+    "trend_alignment_threshold": 0.7,
+    "trend_strength_threshold": 0.02,
+    "signal_confirmation_bars": 2,
+    "volume_confirmation": true,
+    "volume_threshold": 1.2,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "MTFRSI": {
+    "primary_timeframe": "1H",
+    "secondary_timeframe": "4H",
+    "tertiary_timeframe": "1D",
+    "rsi_period": 14,
+    "rsi_overbought": 70,
+    "rsi_oversold": 30,
+    "rsi_alignment_threshold": 0.7,
+    "divergence_lookback": 20,
+    "signal_confirmation_bars": 2,
+    "volume_confirmation": true,
+    "volume_threshold": 1.2,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  },
+  "MTFMACD": {
+    "primary_timeframe": "1H",
+    "secondary_timeframe": "4H",
+    "tertiary_timeframe": "1D",
+    "macd_fast": 12,
+    "macd_slow": 26,
+    "macd_signal": 9,
+    "macd_alignment_threshold": 0.7,
+    "histogram_threshold": 0.0001,
+    "divergence_lookback": 20,
+    "signal_confirmation_bars": 2,
+    "volume_confirmation": true,
+    "volume_threshold": 1.2,
+    "position_size_pct": 0.7,
+    "stop_loss_pct": 0.03,
+    "take_profit_pct": 0.06
+  }
+}
