@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # Simple strategy mapping - we'll expand this as needed
 AVAILABLE_STRATEGIES = {
     "MovingAverageCrossover": "src.strategies.moving_average_crossover",
-    "RSIStrategy": "src.strategies.rsi_strategy", 
+    "RSI": "src.strategies.rsi_strategy", 
     "MACDStrategy": "src.strategies.macd_strategy",
     "BollingerBandsStrategy": "src.strategies.bollinger_bands_strategy",
     "MomentumStrategy": "src.strategies.momentum_strategy",
