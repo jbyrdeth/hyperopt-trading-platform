@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import logging
 
-from ..utils.logger import get_logger
+from utils.logger import get_logger
 
 
 @dataclass
