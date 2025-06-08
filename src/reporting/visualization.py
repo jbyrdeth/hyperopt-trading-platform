@@ -564,7 +564,7 @@ class PlotlyChartGenerator:
             return None
         
         # Prepare monthly returns data
-        monthly_returns = returns_data.resample('ME').apply(lambda x: (1 + x).prod() - 1)
+        monthly_returns = returns_data.resample('M').apply(lambda x: (1 + x).prod() - 1)
         monthly_returns.index = monthly_returns.index.to_period('M')
         
         # Create pivot table for heatmap

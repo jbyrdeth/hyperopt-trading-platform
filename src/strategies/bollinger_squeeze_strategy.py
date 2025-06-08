@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional
 import ta
 
 from .base_strategy import BaseStrategy, Signal
-from utils.logger import get_logger
+from src.utils.logger import get_logger
 
 
 class BollingerSqueezeStrategy(BaseStrategy):

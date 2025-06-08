@@ -14,43 +14,84 @@ from abc import ABC, abstractmethod
 # tests we import ``optimization.strategy_factory`` directly).  Attempting
 # relative imports would fail when ``optimization`` is a top-level package.
 
-from strategies.base_strategy import BaseStrategy
-from strategies.moving_average_crossover import MovingAverageCrossoverStrategy
-from strategies.macd_strategy import MACDStrategy
-from strategies.rsi_strategy import RSIStrategy
-from strategies.bollinger_bands_strategy import BollingerBandsStrategy
-from strategies.momentum_strategy import MomentumStrategy
-
-# Volume-based strategies
-from strategies.vwap_strategy import VWAPStrategy
-from strategies.obv_strategy import OBVStrategy
-from strategies.ad_strategy import ADStrategy
-from strategies.cmf_strategy import CMFStrategy
-
-# Volatility-based strategies
-from strategies.atr_strategy import ATRStrategy
-from strategies.bollinger_squeeze_strategy import BollingerSqueezeStrategy
-from strategies.keltner_channel_strategy import KeltnerChannelStrategy
-from strategies.historical_volatility_strategy import HistoricalVolatilityStrategy
-
-# Advanced momentum strategies
-from strategies.roc_strategy import ROCStrategy
-from strategies.stochastic_strategy import StochasticStrategy
-from strategies.williams_r_strategy import WilliamsRStrategy
-from strategies.ultimate_oscillator_strategy import UltimateOscillatorStrategy
-
-# Pattern recognition strategies
-from strategies.support_resistance_strategy import SupportResistanceStrategy
-from strategies.pivot_points_strategy import PivotPointsStrategy
-from strategies.fibonacci_retracement_strategy import FibonacciRetracementStrategy
-from strategies.double_top_bottom_strategy import DoubleTopBottomStrategy
-
-# Multi-timeframe strategies
-from strategies.mtf_trend_analysis_strategy import MTFTrendAnalysisStrategy
-from strategies.mtf_rsi_strategy import MTFRSIStrategy
-from strategies.mtf_macd_strategy import MTFMACDStrategy
-
-from utils.logger import get_logger
+try:
+    from src.strategies.base_strategy import BaseStrategy
+except ImportError:
+    from strategies.base_strategy import BaseStrategy
+try:
+    from src.strategies.moving_average_crossover import MovingAverageCrossoverStrategy
+    from src.strategies.macd_strategy import MACDStrategy
+    from src.strategies.rsi_strategy import RSIStrategy
+    from src.strategies.bollinger_bands_strategy import BollingerBandsStrategy
+    from src.strategies.momentum_strategy import MomentumStrategy
+    
+    # Volume-based strategies
+    from src.strategies.vwap_strategy import VWAPStrategy
+    from src.strategies.obv_strategy import OBVStrategy
+    from src.strategies.ad_strategy import ADStrategy
+    from src.strategies.cmf_strategy import CMFStrategy
+    
+    # Volatility-based strategies
+    from src.strategies.atr_strategy import ATRStrategy
+    from src.strategies.bollinger_squeeze_strategy import BollingerSqueezeStrategy
+    from src.strategies.keltner_channel_strategy import KeltnerChannelStrategy
+    from src.strategies.historical_volatility_strategy import HistoricalVolatilityStrategy
+    
+    # Advanced momentum strategies
+    from src.strategies.roc_strategy import ROCStrategy
+    from src.strategies.stochastic_strategy import StochasticStrategy
+    from src.strategies.williams_r_strategy import WilliamsRStrategy
+    from src.strategies.ultimate_oscillator_strategy import UltimateOscillatorStrategy
+    
+    # Pattern recognition strategies
+    from src.strategies.support_resistance_strategy import SupportResistanceStrategy
+    from src.strategies.pivot_points_strategy import PivotPointsStrategy
+    from src.strategies.fibonacci_retracement_strategy import FibonacciRetracementStrategy
+    from src.strategies.double_top_bottom_strategy import DoubleTopBottomStrategy
+    
+    # Multi-timeframe strategies
+    from src.strategies.mtf_trend_analysis_strategy import MTFTrendAnalysisStrategy
+    from src.strategies.mtf_rsi_strategy import MTFRSIStrategy
+    from src.strategies.mtf_macd_strategy import MTFMACDStrategy
+    
+    from src.utils.logger import get_logger
+except ImportError:
+    from strategies.moving_average_crossover import MovingAverageCrossoverStrategy
+    from strategies.macd_strategy import MACDStrategy
+    from strategies.rsi_strategy import RSIStrategy
+    from strategies.bollinger_bands_strategy import BollingerBandsStrategy
+    from strategies.momentum_strategy import MomentumStrategy
+    
+    # Volume-based strategies
+    from strategies.vwap_strategy import VWAPStrategy
+    from strategies.obv_strategy import OBVStrategy
+    from strategies.ad_strategy import ADStrategy
+    from strategies.cmf_strategy import CMFStrategy
+    
+    # Volatility-based strategies
+    from strategies.atr_strategy import ATRStrategy
+    from strategies.bollinger_squeeze_strategy import BollingerSqueezeStrategy
+    from strategies.keltner_channel_strategy import KeltnerChannelStrategy
+    from strategies.historical_volatility_strategy import HistoricalVolatilityStrategy
+    
+    # Advanced momentum strategies
+    from strategies.roc_strategy import ROCStrategy
+    from strategies.stochastic_strategy import StochasticStrategy
+    from strategies.williams_r_strategy import WilliamsRStrategy
+    from strategies.ultimate_oscillator_strategy import UltimateOscillatorStrategy
+    
+    # Pattern recognition strategies
+    from strategies.support_resistance_strategy import SupportResistanceStrategy
+    from strategies.pivot_points_strategy import PivotPointsStrategy
+    from strategies.fibonacci_retracement_strategy import FibonacciRetracementStrategy
+    from strategies.double_top_bottom_strategy import DoubleTopBottomStrategy
+    
+    # Multi-timeframe strategies
+    from strategies.mtf_trend_analysis_strategy import MTFTrendAnalysisStrategy
+    from strategies.mtf_rsi_strategy import MTFRSIStrategy
+    from strategies.mtf_macd_strategy import MTFMACDStrategy
+    
+    from src.utils.logger import get_logger
 
 
 class StrategyRegistry:
@@ -397,6 +438,10 @@ class StrategyFactory:
     def create_strategy(self, name: str, **kwargs) -> BaseStrategy:
         """Create a strategy instance with given parameters."""
         return self.registry.create_strategy(name, **kwargs)
+    
+    def get_strategy_class(self, name: str) -> Type[BaseStrategy]:
+        """Get strategy class by name."""
+        return self.registry.get_strategy_class(name)
     
     def get_parameter_space(self, name: str) -> Dict[str, Any]:
         """Get parameter space for a strategy."""

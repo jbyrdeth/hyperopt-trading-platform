@@ -14,7 +14,10 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .base_strategy import BaseStrategy, Signal, Position
-from utils.logger import get_logger, log_performance
+try:
+    from src.utils.logger import get_logger, log_performance
+except ImportError:
+    from src.utils.logger import get_logger, log_performance
 
 
 @dataclass
@@ -636,7 +639,7 @@ class BacktestingEngine:
         recovery_factor = total_pnl / abs(max_drawdown) if max_drawdown != 0 else 0
         
         # Monthly returns
-        monthly_returns = equity_curve.resample('ME').last().pct_change().dropna()
+        monthly_returns = equity_curve.resample('M').last().pct_change().dropna()
         
         # Cost breakdown
         total_commission = sum([t.commission for t in self.trades])

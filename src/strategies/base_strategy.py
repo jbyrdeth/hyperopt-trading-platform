@@ -13,7 +13,10 @@ from dataclasses import dataclass
 from datetime import datetime
 import logging
 
-from utils.logger import get_logger
+try:
+    from src.utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 
 @dataclass

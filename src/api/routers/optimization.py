@@ -109,11 +109,11 @@ async def submit_batch_optimization(
     try:
         logger.info(f"Submitting batch optimization for {len(request.strategies)} strategies")
         
-        # Validate batch size
-        if len(request.strategies) > 20:
+        # Validate batch size (allow more for sequential execution)
+        if len(request.strategies) > 50:  # Increased limit for comprehensive optimization
             raise HTTPException(
                 status_code=422,
-                detail="Batch size cannot exceed 20 strategies"
+                detail="Batch size cannot exceed 50 strategies"
             )
         
         # Submit batch optimization
@@ -137,10 +137,17 @@ async def submit_batch_optimization(
             }
         )
     except Exception as e:
-        logger.error(f"Failed to submit batch optimization: {str(e)}")
+        import traceback
+        error_details = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "error_repr": repr(e),
+            "traceback": traceback.format_exc()
+        }
+        logger.error(f"Failed to submit batch optimization: {error_details}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to submit batch optimization: {str(e)}"
+            detail=f"Failed to submit batch optimization: {error_details['error_message'] or error_details['error_type']}"
         )
 
 

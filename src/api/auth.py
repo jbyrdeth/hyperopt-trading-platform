@@ -123,7 +123,7 @@ rate_limiter = RateLimiter()
 # Rate limit configurations per endpoint category
 RATE_LIMITS = {
     "general": {"limit": 100, "window": 3600},        # 100 requests/hour
-    "optimization": {"limit": 10, "window": 3600},    # 10 requests/hour
+    "optimization": {"limit": 100, "window": 3600},   # 100 requests/hour (temporarily increased for testing)
     "data": {"limit": 1000, "window": 3600},          # 1000 requests/hour
     "export": {"limit": 50, "window": 3600},          # 50 requests/hour
     "health": {"limit": 1000, "window": 60},          # 1000 requests/minute

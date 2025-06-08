@@ -22,6 +22,63 @@ import numpy as np
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK, STATUS_FAIL
 from hyperopt.early_stop import no_progress_loss
 
+# NumPy compatibility fix for hyperopt
+class CompatibleRandomState(np.random.RandomState):
+    """
+    Enhanced RandomState with 'integers' method for hyperopt compatibility.
+    
+    The hyperopt library expects RandomState objects to have an 'integers' method,
+    but this is only available in numpy.random.Generator (from np.random.default_rng).
+    This wrapper adds a compatible 'integers' method to RandomState.
+    """
+    
+    def integers(self, low, high=None, size=None, dtype=np.int64, endpoint=False):
+        """
+        Return random integers from low (inclusive) to high (exclusive).
+        
+        This is a compatibility wrapper around randint to match the signature
+        of numpy.random.Generator.integers().
+        
+        Args:
+            low: Lowest (signed) integers to be drawn from the distribution
+            high: If provided, one above the largest (signed) integer to be drawn
+            size: Output shape
+            dtype: Desired dtype of the result
+            endpoint: If True, sample from the interval [low, high] instead of [low, high)
+            
+        Returns:
+            Array of random integers or scalar integer
+        """
+        if high is None:
+            high = low
+            low = 0
+        
+        # Convert endpoint behavior: integers() is exclusive by default, 
+        # randint() is exclusive by default too, so we're compatible
+        if endpoint:
+            high = high + 1
+        
+        result = self.randint(low, high, size=size)
+        
+        # Handle scalar vs array results
+        if np.isscalar(result):
+            return dtype(result)
+        else:
+            return result.astype(dtype)
+
+
+def create_compatible_random_state(seed=None):
+    """
+    Create a RandomState object with integers() method for hyperopt compatibility.
+    
+    Args:
+        seed: Random seed for reproducibility
+        
+    Returns:
+        CompatibleRandomState object with integers() method
+    """
+    return CompatibleRandomState(seed)
+
 # Use absolute imports
 try:
     from src.strategies.base_strategy import BaseStrategy
@@ -197,6 +254,176 @@ class OptimizationCache:
             self.logger.error(f"Failed to clear cache: {e}")
 
 
+class ParameterSpaceSerializer:
+    """
+    Utility class to serialize and deserialize hyperopt parameter spaces.
+    
+    Hyperopt objects like hp.choice() and hp.uniform() are not directly serializable,
+    so we need to convert them to a serializable format for multiprocessing.
+    """
+    
+    @staticmethod
+    def serialize_parameter_space(param_space: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Convert hyperopt parameter space to serializable format.
+        
+        Args:
+            param_space: Dictionary containing hyperopt parameter definitions
+            
+        Returns:
+            Serializable dictionary representation
+        """
+        serialized = {}
+        
+        for key, value in param_space.items():
+            if hasattr(value, 'name') and hasattr(value, 'pos_args'):
+                # This is a hyperopt distribution object
+                # Map internal hyperopt names to more recognizable names
+                name_mapping = {
+                    'switch': 'choice',  # hp.choice uses 'switch' internally
+                    'float': 'uniform',  # hp.uniform uses 'float' internally
+                    'hyperopt_param': 'randint'  # hp.randint uses 'hyperopt_param' internally
+                }
+                
+                mapped_name = name_mapping.get(value.name, value.name)
+                
+                serialized[key] = {
+                    '_hyperopt_type': mapped_name,
+                    '_hyperopt_original_name': value.name,  # Keep original for debugging
+                    '_hyperopt_args': getattr(value, 'pos_args', []),
+                    '_hyperopt_kwargs': getattr(value, 'kwargs', {})
+                }
+            else:
+                # Regular value, keep as-is
+                serialized[key] = value
+        
+        return serialized
+    
+    @staticmethod
+    def deserialize_parameter_space(serialized_space: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Convert serialized parameter space back to hyperopt format.
+        
+        Args:
+            serialized_space: Serialized parameter space dictionary
+            
+        Returns:
+            Hyperopt parameter space
+        """
+        from src.utils.logger import get_logger
+        logger = get_logger("parameter_deserializer")
+        
+        param_space = {}
+        logger.debug(f"Deserializing parameter space: {serialized_space}")
+        
+        for key, value in serialized_space.items():
+            if isinstance(value, dict) and '_hyperopt_type' in value:
+                # Reconstruct hyperopt object
+                dist_type = value['_hyperopt_type']
+                args = value.get('_hyperopt_args', [])
+                kwargs = value.get('_hyperopt_kwargs', {})
+                
+                # Handle special cases for hyperopt arguments
+                if dist_type == 'choice':
+                    # hp.choice expects (name, options)
+                    if len(args) >= 1:
+                        param_space[key] = hp.choice(key, args[1:] if len(args) > 1 else args[0])
+                    else:
+                        raise ValueError(f"Invalid choice args for {key}: {args}")
+                elif dist_type == 'uniform':
+                    # hp.uniform expects (name, low, high)
+                    if len(args) >= 3:
+                        # Extract low and high bounds from original args
+                        low, high = args[1], args[2]
+                        param_space[key] = hp.uniform(key, low, high)
+                        logger.debug(f"Reconstructed uniform parameter {key}: low={low}, high={high}")
+                    elif len(args) == 2:
+                        # Some cases might have just low/high without name
+                        low, high = args[0], args[1]
+                        param_space[key] = hp.uniform(key, low, high)
+                        logger.debug(f"Reconstructed uniform parameter {key}: low={low}, high={high}")
+                    else:
+                        raise ValueError(f"Invalid uniform args for {key}: {args}. Expected at least 2 arguments (low, high)")
+                elif dist_type == 'randint':
+                    # hp.randint expects (name, upper)
+                    if len(args) >= 2:
+                        param_space[key] = hp.randint(key, args[1])
+                    elif len(args) == 1:
+                        param_space[key] = hp.randint(key, args[0])
+                    else:
+                        raise ValueError(f"Invalid randint args for {key}: {args}. Expected at least 1 argument (upper)")
+                elif dist_type == 'normal':
+                    # hp.normal expects (name, mu, sigma)
+                    if len(args) >= 3:
+                        param_space[key] = hp.normal(key, args[1], args[2])
+                    elif len(args) == 2:
+                        param_space[key] = hp.normal(key, args[0], args[1])
+                    else:
+                        param_space[key] = hp.normal(key, 0, 1)  # fallback
+                elif dist_type == 'lognormal':
+                    # hp.lognormal expects (name, mu, sigma)
+                    if len(args) >= 3:
+                        param_space[key] = hp.lognormal(key, args[1], args[2])
+                    elif len(args) == 2:
+                        param_space[key] = hp.lognormal(key, args[0], args[1])
+                    else:
+                        param_space[key] = hp.lognormal(key, 0, 1)  # fallback
+                elif dist_type == 'quniform':
+                    # hp.quniform expects (name, low, high, q)
+                    if len(args) >= 4:
+                        param_space[key] = hp.quniform(key, args[1], args[2], args[3])
+                    elif len(args) == 3:
+                        param_space[key] = hp.quniform(key, args[0], args[1], args[2])
+                    else:
+                        param_space[key] = hp.quniform(key, 0, 1, 1)  # fallback
+                elif dist_type == 'qnormal':
+                    # hp.qnormal expects (name, mu, sigma, q)
+                    if len(args) >= 4:
+                        param_space[key] = hp.qnormal(key, args[1], args[2], args[3])
+                    elif len(args) == 3:
+                        param_space[key] = hp.qnormal(key, args[0], args[1], args[2])
+                    else:
+                        param_space[key] = hp.qnormal(key, 0, 1, 1)  # fallback
+                elif dist_type == 'qlognormal':
+                    # hp.qlognormal expects (name, mu, sigma, q)
+                    if len(args) >= 4:
+                        param_space[key] = hp.qlognormal(key, args[1], args[2], args[3])
+                    elif len(args) == 3:
+                        param_space[key] = hp.qlognormal(key, args[0], args[1], args[2])
+                    else:
+                        param_space[key] = hp.qlognormal(key, 0, 1, 1)  # fallback
+                else:
+                    # Fallback: try to get the function from hp module
+                    try:
+                        hp_func = getattr(hp, dist_type)
+                        param_space[key] = hp_func(key, 0, 1)  # Default args
+                    except AttributeError:
+                        raise ValueError(f"Unknown hyperopt distribution type: {dist_type}")
+            else:
+                # Regular value
+                param_space[key] = value
+        
+        logger.debug(f"Successfully deserialized parameter space with {len(param_space)} parameters")
+        return param_space
+    
+    @staticmethod
+    def is_serializable(param_space: Dict[str, Any]) -> bool:
+        """
+        Check if a parameter space is already serializable.
+        
+        Args:
+            param_space: Parameter space to check
+            
+        Returns:
+            True if serializable, False otherwise
+        """
+        try:
+            pickle.dumps(param_space)
+            return True
+        except (pickle.PicklingError, TypeError):
+            return False
+
+
 class HyperoptOptimizer:
     """
     Hyperparameter optimization engine using Hyperopt TPE algorithm.
@@ -266,59 +493,71 @@ class HyperoptOptimizer:
         return train_data, val_data
     
     def _calculate_composite_score(self, results: BacktestResults) -> float:
-        """Calculate composite score from multiple objectives."""
-        score = 0.0
-        
+        """Calculate composite score based on multiple objectives."""
+        scores = []
         for objective in self.config.objectives:
-            # Get metric value
-            if hasattr(results, objective.name):
-                value = getattr(results, objective.name)
-            else:
-                self.logger.warning(f"Objective '{objective.name}' not found in results")
-                continue
+            metric_value = getattr(results, objective.name, 0.0)
             
-            # Handle NaN/inf values
-            if pd.isna(value) or np.isinf(value):
-                value = -1.0 if objective.maximize else 1.0
-            
-            # Normalize and apply weight
             if objective.maximize:
-                normalized_value = value
+                score = metric_value
             else:
-                # For minimize objectives, invert the value
-                normalized_value = -value
+                # For minimization objectives (like drawdown), invert the score
+                score = -metric_value
             
-            score += objective.weight * normalized_value
+            # Apply weight
+            weighted_score = score * objective.weight
+            scores.append(weighted_score)
         
-        return score
+        return sum(scores)
+    
+    def _convert_choice_indices_to_values(self, params: Dict[str, Any], parameter_space: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Convert hyperopt choice indices back to actual choice values.
+        
+        Args:
+            params: Parameters with potential choice indices
+            parameter_space: Original hyperopt parameter space
+            
+        Returns:
+            Parameters with actual choice values
+        """
+        converted_params = params.copy()
+        
+        for param_name, param_value in params.items():
+            if param_name in parameter_space:
+                param_space_obj = parameter_space[param_name]
+                
+                # Check if it's a hyperopt choice object
+                if hasattr(param_space_obj, 'name') and hasattr(param_space_obj, 'options'):
+                    if param_space_obj.name == 'hyperopt_choice':
+                        # Convert index to actual choice value
+                        try:
+                            if isinstance(param_value, (int, float)) and 0 <= param_value < len(param_space_obj.options):
+                                converted_params[param_name] = param_space_obj.options[int(param_value)]
+                        except (IndexError, TypeError) as e:
+                            self.logger.warning(f"Could not convert choice index {param_value} for parameter {param_name}: {e}")
+                            # Keep original value if conversion fails
+                            pass
+       
+        return converted_params
     
     def _objective_function(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """
         Objective function for hyperopt optimization.
         
         Args:
-            params: Strategy parameters to evaluate
+            params: Parameters from hyperopt
             
         Returns:
             Dictionary with loss and status
         """
         try:
-            # Check cache first
-            if self.cache:
-                data_hash = self._calculate_data_hash(self.current_data)
-                config_hash = self._calculate_config_hash()
-                cache_key = self.cache._get_cache_key(
-                    self.current_strategy_class, params, data_hash, config_hash
-                )
-                
-                cached_result = self.cache.get(cache_key)
-                if cached_result is not None:
-                    self.cache_hits += 1
-                    self.logger.debug(f"Cache hit for params: {params}")
-                    return cached_result
+            # Debug logging to see what hyperopt is passing
+            self.logger.info(f"Objective function received params: {params}")
             
-            # Split data for validation
-            train_data, val_data = self._split_data(self.current_data)
+            # Validate required parameters
+            if not params:
+                raise ValueError("No parameters provided")
             
             # Create strategy instance
             strategy = self.current_strategy_class(**params)
@@ -328,24 +567,24 @@ class HyperoptOptimizer:
                 return {'loss': 1e6, 'status': STATUS_FAIL}
             
             # Initialize strategy
-            strategy.initialize(train_data)
+            strategy.initialize(self.current_data)
             if not strategy.is_initialized:
                 return {'loss': 1e6, 'status': STATUS_FAIL}
             
             # Run backtest
             engine = BacktestingEngine(initial_capital=100000)
-            results = engine.backtest_strategy(strategy, train_data, self.current_symbol)
+            results = engine.backtest_strategy(strategy, self.current_data, self.current_symbol)
             
             # Calculate composite score
             score = self._calculate_composite_score(results)
             
             # Validation on out-of-sample data
             validation_score = None
-            if len(val_data) > 0 and self.config.validation_split > 0:
+            if len(self.current_data) > 0 and self.config.validation_split > 0:
                 strategy.reset()
-                strategy.initialize(val_data)
+                strategy.initialize(self.current_data)
                 if strategy.is_initialized:
-                    val_results = engine.backtest_strategy(strategy, val_data, self.current_symbol)
+                    val_results = engine.backtest_strategy(strategy, self.current_data, self.current_symbol)
                     validation_score = self._calculate_composite_score(val_results)
             
             # Prepare result
@@ -360,6 +599,11 @@ class HyperoptOptimizer:
             
             # Cache result
             if self.cache:
+                data_hash = self._calculate_data_hash(self.current_data)
+                config_hash = self._calculate_config_hash()
+                cache_key = self.cache._get_cache_key(
+                    self.current_strategy_class, params, data_hash, config_hash
+                )
                 self.cache.put(cache_key, result)
             
             self.logger.debug(f"Evaluated params {params}: score={score:.4f}")
@@ -413,7 +657,7 @@ class HyperoptOptimizer:
                 max_evals=self.config.max_evals,
                 trials=trials,
                 early_stop_fn=early_stop_fn,
-                rstate=np.random.RandomState(self.config.random_state),
+                rstate=create_compatible_random_state(self.config.random_state),
                 verbose=False
             )
             
@@ -421,6 +665,26 @@ class HyperoptOptimizer:
             best_trial = min(trials.trials, key=lambda x: x['result']['loss'])
             best_score = -best_trial['result']['loss']  # Convert back from loss
             best_metrics = best_trial['result']['metrics']
+            
+            # Extract actual parameter values from best trial
+            # The 'vals' dict contains lists, so we need to extract the single values
+            best_params = {}
+            for key, value_list in best_trial['misc']['vals'].items():
+                if len(value_list) == 1:
+                    best_params[key] = value_list[0]
+                else:
+                    # This shouldn't happen in single evaluations, but handle gracefully
+                    best_params[key] = value_list[0] if value_list else None
+            
+            # Debug logging to understand parameter extraction
+            self.logger.debug(f"Raw best_trial['misc']['vals']: {best_trial['misc']['vals']}")
+            self.logger.debug(f"Extracted best_params: {best_params}")
+            
+            # For hp.choice parameters, we need to convert indices back to actual choices
+            # This requires knowledge of the parameter space structure
+            best_params = self._convert_choice_indices_to_values(best_params, parameter_space)
+            
+            self.logger.debug(f"Final best_params after choice conversion: {best_params}")
             
             # Validation results
             validation_results = None
@@ -444,7 +708,7 @@ class HyperoptOptimizer:
             optimization_time = time.time() - start_time
             
             result = OptimizationResult(
-                best_params=best,
+                best_params=best_params,
                 best_score=best_score,
                 best_metrics=best_metrics,
                 all_trials=all_trials,
@@ -493,17 +757,31 @@ class HyperoptOptimizer:
                 result = self.optimize_strategy(strategy_class, param_space, data, symbol)
                 results[strategy_class.__name__] = result
         else:
-            # Parallel optimization
+            # Parallel optimization with serialization handling
+            serializer = ParameterSpaceSerializer()
+            
+            # Prepare serializable strategies
+            serializable_strategies = []
+            for strategy_class, param_space in strategies:
+                if not serializer.is_serializable(param_space):
+                    # Serialize the parameter space
+                    serialized_space = serializer.serialize_parameter_space(param_space)
+                    self.logger.debug(f"Serialized parameter space for {strategy_class.__name__}")
+                else:
+                    serialized_space = param_space
+                
+                serializable_strategies.append((strategy_class, serialized_space))
+            
             with ProcessPoolExecutor(max_workers=self.config.n_jobs) as executor:
                 future_to_strategy = {
                     executor.submit(
-                        self.optimize_strategy, 
+                        self._optimize_strategy_with_deserialization, 
                         strategy_class, 
                         param_space, 
                         data, 
                         symbol
                     ): strategy_class.__name__
-                    for strategy_class, param_space in strategies
+                    for strategy_class, param_space in serializable_strategies
                 }
                 
                 for future in as_completed(future_to_strategy):
@@ -517,6 +795,40 @@ class HyperoptOptimizer:
         
         self.logger.info(f"Multi-strategy optimization completed: {len(results)} strategies")
         return results
+    
+    def _optimize_strategy_with_deserialization(
+        self,
+        strategy_class: type,
+        param_space: Dict[str, Any],
+        data: pd.DataFrame,
+        symbol: str = "UNKNOWN"
+    ) -> OptimizationResult:
+        """
+        Helper method for parallel optimization that handles parameter space deserialization.
+        
+        Args:
+            strategy_class: Strategy class to optimize
+            param_space: Parameter space (potentially serialized)
+            data: Historical data for optimization
+            symbol: Trading symbol
+            
+        Returns:
+            OptimizationResult with best parameters and metrics
+        """
+        serializer = ParameterSpaceSerializer()
+        
+        # Check if parameter space needs deserialization
+        needs_deserialization = any(
+            isinstance(v, dict) and '_hyperopt_type' in v 
+            for v in param_space.values()
+        )
+        
+        if needs_deserialization:
+            # Deserialize the parameter space
+            param_space = serializer.deserialize_parameter_space(param_space)
+        
+        # Run the optimization
+        return self.optimize_strategy(strategy_class, param_space, data, symbol)
     
     def walk_forward_optimization(
         self,
